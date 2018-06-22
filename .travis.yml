@@ -6,7 +6,10 @@ sudo: required
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y python-dev 
+  - sudo apt-get install -y python-dev
+  - curl https://bootstrap.pypa.io/get-pip.py >get-pip.py && python get-pip.py
+  - pip install --upgrade pip
+  - pip install --upgrade virtualenv
 
 script:
   - make install
