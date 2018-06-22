@@ -1,0 +1,22 @@
+language: python
+python:
+    - "2.7"
+dist: trusty
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y virtualenv python-dev 
+
+script:
+  - make install
+  - make test
+  - make docs
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GHPAGES_TOKEN
+  local_dir: docs/_build/html
+  target_branch: gh-pages
+  on:
+    branch: master
