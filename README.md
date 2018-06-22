@@ -46,7 +46,7 @@ Panga installs into a virtual environment. Installation should should be as simp
     Make install 
 
 On Ubuntu, you will need to install the virtualenv and python-dev packages.
-    sudo apt-get install virtualenv python-dev 
+    sudo apt-get install python-virtualenv python-dev 
 
 Running read_builder
 --------------------
