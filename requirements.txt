@@ -4,4 +4,3 @@ fast5_research
 funcsigs
 matplotlib
 pyyaml
-distribute>=0.7.3
