@@ -1,0 +1,7 @@
+numpy==1.9.0
+scipy>=0.15.1
+fast5_research>=1.0.7
+funcsigs
+matplotlib
+pyyaml
+distribute>=0.7.3

@@ -1,0 +1,65 @@
+read_builder:
+  components:                    # specify options specific to individual components
+    splitter:                    # choose how we will segment the channel into reads
+      Fast5Split:                # use Minknow read boundaries from the fast5
+    metrifier:                   # choose what component we want to calculate metrics
+      StandardMinknowMetrics:    # use the metrics in the fast5 read table (but add a few, e.g. is_saturated)
+    classifier:                  # choose the classifier
+      ReadRules:                 # use the rules below, do not use any 'local' metrics, that are used in Minknow
+        rules: [ 'multiple = (median,gt,275)&(median,lt,990)&(duration,gt,0.25)',
+                 'pore = (median,gt,190)&(median,lt,275)&(median_sd,lt,10)',
+                 'noisy_pore = (median,gt,190)&(median,lt,275)&(median_sd,gt,10)',
+                 'adapter = (median,gt,50)&(median,lt,130)&(median_before,gt,150)&(median_before,lt,275)&(duration,gt,0.02)&(duration,lt,0.4)&(event_count,gt,5)&(event_count,lt,50) &(range,gt,20)&(range,lt,70)',
+                 'strand = (median,gt,50)&(median,lt,130)&(median_before,gt,150)&(median_before,lt,275)&(range,gt,20)&(range,lt,40)&(median_sd,gt,1.5)&(median_sd,lt,5)&(duration,gt,2)&(duration,lt,130)&(event_count,gt,100)',
+                 'event = (median,gt,75)&(median,lt,150)&(median_before,gt,150)&(median_before,lt,275)&(median_sd,lt,5)&(duration,lt,0.5)',
+                 'zero = (median,gt,-5)&(median,lt,20)&(median_sd,lt,1.5)&(duration,lt,5)',
+                 'short_block = (median,gt,5)&(median,lt,150)&(duration,lt,5)',
+                 'long_block = (median,gt,5)&(median,lt,150)&(duration,gt,5)',
+                 'user1 = (median,gt,-5)&(median,lt,150)',
+                 'user2 = (median,gt,-999)&(median,lt,-5)',
+                 'unavailable = (median,gt,100)&(median,lt,185)' ]
+    second_stage:                # option to tag on a second pipeline at the end of the first
+      BlockingAnalysis:          # add a blocking pipline at the end of the first pipeline
+          kwargs:                # specify keyword arguments for the blocking pipeline
+            non_block_classes: [pore, strand, adapter, multiple, saturated, off] 
+                                # non_block_classes are the trusted read classes which will not be joined together
+            rules: ['bermuda = (duration,gt,900) & (median_current_0_to_1_s,gt,40) & (median_current_0_to_1_s,lt,150) & (median_current_500_to_900_s - median_current_0_to_1_s,gt,-90) & (median_current_500_to_900_s - median_current_0_to_1_s,lt,-25)',
+            'bermuda = (duration,gt,900) & (median_current_1_to_3_s,gt,40) & (median_current_1_to_3_s,lt,150) & (median_current_500_to_900_s - median_current_1_to_3_s,gt,-90) & (median_current_500_to_900_s - median_current_1_to_3_s,lt,-25)',
+            'bermuda = (duration,gt,900) & (stall_median_current,gt,40) & (stall_median_current,lt,150) & (median_current_500_to_900_s - stall_median_current,gt,-90) & (median_current_500_to_900_s - stall_median_current,lt,-25)',
+            'unproductive =      (initial_classification, eq, "unproductive")', 'pore
+              = (initial_classification, eq, "pore")', 'strand = (initial_classification,
+              eq, "strand")', 'tba = (initial_classification, eq, "tba")', 'adapter
+              = (initial_classification, eq, "adapter")', 'multiple = (initial_classification,
+              eq, "multiple")']
+            recovered_classes: [strand, adapter, pore]  # if the next read is one of the recovered_classes, is_recovered = 1
+            state_classes: [strand, pore, adapter]  # compile metrics such as n_strand_global, n_strand_local for these classes
+            time_since: [unproductive, strand, adapter, pore, bermuda]  # inject time since the last read for all these classes
+            to_inject:  # inject metrics of neighbouring reads, e.g. median_current_before
+            # metric, relative position (-1 = before, +1 = after), suffix, padding for first/last read with no read before/after. 
+            - [median_current, -1, _before, 0]
+            - [median_current, 1, _after, 0]
+            - [initial_classification, -1, _before, none]  # add in the classification from the first pipeline
+            - [initial_classification, 1, _after, none]
+            window_bounds: [0, 1, 3, 500, 900]  
+                # in the blocking analysis, we calculate medians over 4 time windows to pick out phase1, 2, 3 of the bermuda blocks
+                # these are the boundaries of the windows (first window is 0-1 seconds, last one is 500-900s
+            with_events: true    # load events for the new joined-up reads
+            with_raw: false      # don't load raw for the new joined-up reads
+            with_states: true    # load channel states for the new joined-up reads
+    accumulator:                 # choose what summary or plot outputs we want
+      ClassicMetricSummary:      # this will generate a read summary and a strand summary
+      DutyTimePlot:              # a multi-panel duty time plot and txt data files
+      DutyTimeDistPlot:          # duty time distribution plot and txt data file
+      EventRatePlot:             # plot of mean events per second rate for strand reads. 
+      ChannelReport:            # report of which channels saturated and when 
+      BlockingReport:            # create per-channel and per-run blocking reports as well as a filtered summary. 
+        filter_ch_mux: True      # filter out any ch/mux with ch states which were ever saturated/multiple, or read class multiple
+        filter_classes:          # filter_classes=None, so don't filter out read by class. 
+        filter_sum_duration: 7200 # filter out any ch/muxes which don't have a summed read duration greater than 2 hours. 
+                                 # This is useful to filter out reads arising from periods at the start/end of a run or
+                                 # during flicks when the mux is temporarily changed for a short period, and typically
+                                 # does not generate reads we want to keep.
+        filter_counts: {'pore': 1}  # filter out ch/muxes which don't have at least 1 pore read. 
+                                 # This should help eliminate channels which for whatever reason don't have a pore, 
+                                 # or have a permanently noisy pore.
+                                    

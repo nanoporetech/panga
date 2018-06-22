@@ -1,0 +1,28 @@
+read_builder:
+  components:                   # specify options specific to individual components
+    splitter:                   # choose how we will segment the channel into reads
+      DeltaSplit:               # use a Delta splitter
+        with_events: True       # load events from the fast5 file
+        delta: 90               # use a delta of 90 pA
+        look_back: 3            # use a lookback (window size) of 3 events
+    metrifier:                  # choose what component we want to calculate metrics
+      StandardMinionMetrics:    # (re)calculate a standard set of metrics from event data
+    classifier:                 # choose the classifier
+      ReadRules:                # use the rules below, do not use any 'local' metrics, that are used in Minknow
+        rules: [
+          'pore = (range_current,lt,10) & (median_current,gt,150) & (median_current,lt,250) & (median_sd,gt,0.75) & (median_sd,lt,3)',
+          'noisy_pore    = (median_current,gt,150) & (median_current,lt,250) & (median_sd,gt,3)',
+          'adapter		 = (pore_before,gt,150) & (pore_before,lt,250) & (median_current,gt,90) & (median_current,lt,150) & (strand_duration,lt,2) & (strand_duration,gt,0.5) & (num_events,lt,120) & (num_events,gt,10)',
+          'strand        = (pore_before,gt,150) & (pore_before,lt,250) & (range_current,gt,15) & (range_current,lt,60) & (median_current,gt,50) & (median_current,lt,130) & (median_sd,gt,1) & (median_sd,lt,4) & (strand_duration,gt,2) & (strand_duration,lt,20) & (num_events,gt,100)',
+          'zero			 = (median_current,gt,-5) & (median_current,lt,30) & (median_sd,lt,1.5) & (strand_duration,lt,5)',
+          'unbound_dna   = (strand_duration,lt,0.5)',
+          'short_block   = (strand_duration,lt,5)',
+          'long_block    = (strand_duration,gt,5)']
+    second_stage:               # option to tag on a second pipeline at the end of the first
+      PassStage:                # don't do anything in the second pipeline
+    accumulator:                # choose what summary or plot outputs we want
+      ClassicMetricSummary:     # this will generate a read summary and a strand summary
+      DutyTimePlot:             # a multi-panel duty time plot and txt data files
+      DutyTimeDistPlot:         # duty time distribution plot and txt data file
+      EventRatePlot:            # plot of mean events per second rate for strand reads. 
+      ChannelReport:            # report of which channels saturated and when 

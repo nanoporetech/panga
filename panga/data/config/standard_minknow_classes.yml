@@ -1,0 +1,16 @@
+read_builder:
+  components:                   # specify options specific to individual components
+    splitter:                   # choose how we will segment the channel into reads
+      Fast5Split:               # use Minknow read boundaries from the fast5
+    metrifier:                  # choose what component we want to calculate metrics
+      StandardMinknowMetrics:   # use the metrics in the fast5 read table (but add a few, e.g. is_saturated)
+    classifier:                 # choose the classifier
+      StandardClassifier:       # uses the Minknow read classes found in the fast5
+    second_stage:               # option to tag on a second pipeline at the end of the first
+      PassStage:                # don't do anything in the second pipeline
+    accumulator:                # choose what summary or plot outputs we want
+      ClassicMetricSummary:     # this will generate a read summary and a strand summary
+      DutyTimePlot:             # a multi-panel duty time plot and txt data files
+      DutyTimeDistPlot:         # duty time distribution plot and txt data file
+      EventRatePlot:            # plot of mean events per second rate for strand reads.
+      ChannelReport:            # report of which channels saturated and when 

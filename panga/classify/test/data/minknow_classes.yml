@@ -1,0 +1,12 @@
+read_builder:
+  components:
+    splitter: 
+      Fast5Split:
+    metrifier: 
+      StandardMinknowMetrics:
+    classifier:
+      StandardClassifier:
+    second_stage:
+      PassStage:
+    accumulator:
+      MetricSummary:

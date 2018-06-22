@@ -1,0 +1,16 @@
+read_builder:
+  components:                   # specify options specific to individual components
+    splitter:                   # choose how we will segment the channel into reads
+      SummarySplit:             # use existing read summary
+        with_events: True
+        with_raw: True
+    metrifier:                  # choose what component we want to calculate metrics
+      SummaryMetrics:           # use metrics from the summary file
+    classifier:                 # choose the classifier
+      StandardClassifier:       # uses the read classes found in the summary
+    second_stage:               # option to tag on a second pipeline at the end of the first
+      PassStage:                # don't do anything in the second pipeline
+    accumulator:                # choose what summary or plot outputs we want
+        ClassicMetricSummary:   # summary (with filenames)
+    concluder:
+        Fast5Write:             # write per-read fast5 files
