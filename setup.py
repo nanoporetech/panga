@@ -72,7 +72,7 @@ extra_requires = {
 setup(
     name=__pkg_name__,
     version=__version__,
-    url='https://git.oxfordnanolabs.local/research/{}'.format(__pkg_name__),
+    url='https://github.com/nanoporetech/{}'.format(__pkg_name__),
     author='cwright',
     author_email='cwright@nanoporetech.com',
     maintainer='cwright',
