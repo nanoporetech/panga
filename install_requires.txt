@@ -1,4 +1,4 @@
 cython
-numpy==1.9.0
+numpy
 setuptools
 nose

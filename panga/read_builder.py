@@ -116,7 +116,7 @@ def get_argparser():
     parser.add_argument('--more_help', nargs='?', default=None, action=MoreHelpAction,
                         help='Show list of components. If a specific component is provided, print its doc string.')
     parser.add_argument('--channels', default=None, metavar='Channel List', action=cmdargs.ExpandRanges, help='Channels to process, default is all channels.')
-    parser.add_argument('--max_time', default=np.inf, help='Stop processing reads after a certain time.')
+    parser.add_argument('--max_time', type=float, default=np.inf, help='Stop processing reads after a certain time.')
     parser.add_argument('--jobs', default=1, type=int, help='Number of processes to use.')
     parser.add_argument('--fast5', action=cmdargs.FileExists, help='Bulk fast5 file for input.')
     parser.add_argument('--outpath', help='Output directory (should not already exist)')

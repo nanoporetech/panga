@@ -1,6 +1,6 @@
 numpy
 scipy>=0.15.1
-fast5_research
+fast5_research>=1.2.15
 funcsigs
-matplotlib
+matplotlib<3.0
 pyyaml
