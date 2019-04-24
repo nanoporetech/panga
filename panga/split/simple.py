@@ -330,7 +330,7 @@ class RandomData(SplitBase):
 
 class AdaptiveThreshold(Fast5Split):
 
-    def  __init__(self, fast5, channel, outpath, prefix, with_raw=False, max_time=np.inf):
+    def  __init__(self, fast5, channel, outpath, prefix, with_raw=False, max_time=np.inf, pore_rank=0, capture_rank=1, thresh_factor=0.9, fixed_threshold=None):
         """Split based on open-pore and strand-capture levels inferred from distribution of event levels.
 
         :param fast5: fast5 file.
@@ -338,11 +338,21 @@ class AdaptiveThreshold(Fast5Split):
         :param threshold: current below which to create a read boundary.
         :param outpath: output path for plot.
         :param prefix: prefix (prefixed to output plot)
-
+        :param pore_rank: int, ranking of pore current within kde local maxima,
+               defaults corresponds to highest probability peak.
+        :param capture_rank: int, ranking of capture current within kde local maxima,
+               defaults corresponds to second highest probability peak.
+        :param thresh_factor: float, factor determining position of threshold between capture and pore levels. 0.5 corresponds to mid-point.
+               threshold = capture_level + thresh_factor * (pore_level - capture_level)
+        :param fixed_threshold: float, use this fixed threshold. If None, calculate threshold.
         """
         super(AdaptiveThreshold, self,).__init__(fast5, channel, with_events=True, with_raw=with_raw, max_time=max_time)
-        self.pore_level, self.capture_level = self._get_levels(outpath, prefix)
-        self.threshold = 0.5 * (self.pore_level + self.capture_level)
+        times = (0, max_time) if max_time < np.inf else None
+        if fixed_threshold is None:
+            self.pore_level, self.capture_level, self.threshold = self._get_levels(outpath, prefix, times, pore_rank, capture_rank, thresh_factor)
+        else:
+            self.threshold = fixed_threshold
+            self.pore_level, self.capture_level = None, None
 
     @property
     def provides_events(self):
@@ -355,7 +365,10 @@ class AdaptiveThreshold(Fast5Split):
     @property
     def meta_keys(self):
         return (
-            'start_time', 'duration', 'channel', 'mux', 'states', 'pore_level', 'capture_level', 'threshold',
+            'start_time', 'duration', 'start_event', 'end_event', 'num_events',
+            'mux', 'states', 'channel', 'mux_changes', 'pore_level',
+            'capture_level', 'threshold',
+            'bias_voltage_changes',
         )
 
     def reads(self):
@@ -378,6 +391,7 @@ class AdaptiveThreshold(Fast5Split):
             # pad end with last event index + 1.
             read_bound_event_indices = np.append(read_bound_event_indices, len(events) - 1)
             for start_event, next_start_event in iterators.window(read_bound_event_indices, 2):
+                read_events = events[start_event: next_start_event]
                 start_t, end_t = events[start_event]['start'], events[next_start_event]['start']
                 meta = {
                     'start_time': start_t,
@@ -385,6 +399,9 @@ class AdaptiveThreshold(Fast5Split):
                     'pore_level': self.pore_level,
                     'capture_level': self.capture_level,
                     'threshold': self.threshold,
+                    'start_event': start_event,
+                    'end_event': next_start_event,
+                    'num_events': len(read_events),
                 }
                 self._add_channel_states(fh, meta)
                 read_raw = None
@@ -397,7 +414,7 @@ class AdaptiveThreshold(Fast5Split):
                 yield Read(events=read_events, raw=read_raw, meta=meta, channel_meta=self.channel_meta,
                            context_meta=self.context_meta, tracking_meta=self.tracking_meta)
 
-    def _get_levels(self, outpath, prefix):
+    def _get_levels(self, outpath, prefix, times=None, pore_rank=0, capture_rank=1, thresh_factor=0.9):
         """Calculate distribution of event means, and infer open-pore level and  capture level.
 
         Assumes the pore level corresoponds to the highest-probability peak in
@@ -405,38 +422,71 @@ class AdaptiveThreshold(Fast5Split):
 
         :param outpath: directory in which to plot the distribution and levels.
         :param prefix: prefix (prefixed to output plot path)
-        :returns: tuple of floats, (pore_level, capture level)
+        :param times: (start time, end time) or None
+        :param pore_rank: int, ranking of pore current within kde local maxima,
+               defaults corresponds to highest probability peak.
+        :param capture_rank: int, ranking of capture current within kde local maxima,
+               defaults corresponds to second highest probability peak.
+        :param thresh_factor: float, factor f with which to calculate boundary threshold;
+                threshold = capture_level + f * (pore_level - capture_level)
+                a value of 0.5 implies the midpoint between pore and capture.
+        :returns: tuple of floats, (pore_level, capture_level, threshold)
         """
         with BulkFast5(self.fast5) as fh:
-            events = fh.get_events(self.channel)
+            logger.info('Loading events for channel {}'.format(self.channel))
+            events = fh.get_events(self.channel, times=times)
 
+        logger.info('Calculating kde for channel {}'.format(self.channel))
         kde = gaussian_kde(events['mean'], bw_method='silverman')  # silverman is seemingly better for multi-modal dists
+        logger.info('Done calculating kde for channel {}'.format(self.channel))
         x = np.linspace(np.min(events['mean']), np.max(events['mean']), 100)
 
         pde_vals = kde(x)  # evaluate density over grid
         max_inds = argrelmax(kde(x))  # find all local maxima
         max_probs = pde_vals[max_inds]
-        sorted_inds = np.argsort(max_probs)
-        max_ind = max_inds[0][sorted_inds[-1]]  # index of maxima in x and max_probs
-        second_max_ind = max_inds[0][sorted_inds[-2]]
+        sorted_inds = np.argsort(max_probs)[::-1]  # so max prob is 1st elem
+        pore_ind = max_inds[0][sorted_inds[pore_rank]]
+        capture_ind = max_inds[0][sorted_inds[capture_rank]]
 
-        pore_level = x[max_ind]
-        capture_level = x[second_max_ind]
+        pore_level = x[pore_ind]
+        capture_level = x[capture_ind]
+        threshold = capture_level + thresh_factor * (pore_level - capture_level)
 
         # plot kde, histogram and levels.
         fig, axis = plt.subplots()
         axis.hist(events['mean'], bins=100, color='k', label='histogram')
         axis.legend(loc='upper center', frameon=False)
+        axis.set_xlim((-100, 400))
         axis2 = axis.twinx()
+
         axis2.plot(x, kde(x), label='kde', color='k')
         axis2.plot(x[max_inds], pde_vals[max_inds],'o', label='local maxima', color='b')
-        axis2.plot(x[max_ind], pde_vals[max_ind],'o', label='open pore current', color='r')
-        axis2.plot(x[second_max_ind], pde_vals[second_max_ind],'o', label='capture current', color='g')
+        axis2.plot(x[pore_ind], pde_vals[pore_ind],'o', label='open pore current', color='r')
+        axis2.plot(x[capture_ind], pde_vals[capture_ind],'o', label='capture current', color='g')
+        axis.axvline(threshold, label='threshold', color='magenta')
         axis2.legend(loc='upper left', frameon=False)
-        plot_path = os.path.join(outpath, add_prefix('AdaptiveThresholdLevels', prefix))
+        plot_path = os.path.join(outpath, add_prefix('AdaptiveThresholdLevels_{}'.format(self.channel, prefix)))
         plt.savefig(plot_path, bbox_inches='tight', dpi=200)
+        with open(plot_path + '.txt', 'w') as fh:
+            fh.write('#pore rank {}\n'.format(pore_rank))
+            fh.write('#capture rank {}\n'.format(capture_rank))
+            fh.write('#thresh_factor {}\n'.format(thresh_factor))
+            fh.write('#pore level {}\n'.format(pore_level))
+            fh.write('#capture level {}\n'.format(capture_level))
+            fh.write('#threshold level {}\n'.format(threshold))
+            # write local maxima in kde distribution
+            fh.write('# probability maxima in kde \n')
+            fh.write('\t'.join(['pA', 'kde']) + '\n')
+            for i in range(len(max_probs)):
+                j = max_inds[0][sorted_inds[i]]
+                fh.write('\t'.join(map(str, [x[j], pde_vals[j]])) + '\n')
+            # write sampled kde
+            fh.write('# kde points \n')
+            fh.write('\t'.join(['pA', 'kde']) + '\n')
+            for xi, yi in zip(x, pde_vals):
+               fh.write('\t'.join(map(str, [xi, yi])) + '\n')
 
-        return pore_level, capture_level
+        return pore_level, capture_level, threshold
 
 
 class SummarySplit(Fast5Split):
