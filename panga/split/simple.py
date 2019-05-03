@@ -11,6 +11,7 @@ from fast5_research.fast5_bulk import BulkFast5
 from fast5_research.util import get_changes
 
 from panga import iterators
+from panga.metric.metrics import sliding_metric
 from panga.fileio import readchunkedtsv
 
 from panga.split.base import SplitBase, Read
@@ -330,7 +331,7 @@ class RandomData(SplitBase):
 
 class AdaptiveThreshold(Fast5Split):
 
-    def  __init__(self, fast5, channel, outpath, prefix, with_raw=False, max_time=np.inf, pore_rank=0, capture_rank=1, thresh_factor=0.9, fixed_threshold=None):
+    def  __init__(self, fast5, channel, outpath, prefix, with_raw=False, max_time=np.inf, pore_rank=0, capture_rank=1, thresh_factor=0.9, fixed_threshold=None, rolling_window=None):
         """Split based on open-pore and strand-capture levels inferred from distribution of event levels.
 
         :param fast5: fast5 file.
@@ -345,9 +346,11 @@ class AdaptiveThreshold(Fast5Split):
         :param thresh_factor: float, factor determining position of threshold between capture and pore levels. 0.5 corresponds to mid-point.
                threshold = capture_level + thresh_factor * (pore_level - capture_level)
         :param fixed_threshold: float, use this fixed threshold. If None, calculate threshold.
+        :param rolling_window: int, use a rolling window of this size over event means.
         """
         super(AdaptiveThreshold, self,).__init__(fast5, channel, with_events=True, with_raw=with_raw, max_time=max_time)
         times = (0, max_time) if max_time < np.inf else None
+        self.rolling_window = rolling_window
         if fixed_threshold is None:
             self.pore_level, self.capture_level, self.threshold = self._get_levels(outpath, prefix, times, pore_rank, capture_rank, thresh_factor)
         else:
@@ -385,7 +388,12 @@ class AdaptiveThreshold(Fast5Split):
                 events = drop_fields(events, col, usemask=False)
                 events = append_fields(events, col, times, usemask=False)
 
-            read_bound_event_indices = np.where(np.ediff1d((events['mean'] < self.threshold).astype(int)) !=0)[0]
+            if self.rolling_window is not None:
+                ev_mean = sliding_metric(events['mean'], np.mean, self.rolling_window, -self.rolling_window, np.mean(events['mean']))
+            else:
+                ev_mean = events['mean']
+
+            read_bound_event_indices = np.where(np.ediff1d((ev_mean < self.threshold).astype(int)) !=0)[0]
             # first event should be start of first read
             read_bound_event_indices = np.insert(read_bound_event_indices + 1, 0, 0)
             # pad end with last event index + 1.
