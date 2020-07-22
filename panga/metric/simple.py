@@ -5,7 +5,7 @@ from panga.metric.base import MetricBase
 from panga.metric.metrics import apply_to_field, duration, range_data, get_channel_attr, get_channel_attr_at_read, get_read_meta_attr, read_start_time, is_saturated_at_read, is_multiple_at_read, is_off_at_read, n_global_flicks_in_read, n_active_flicks_in_read, windowed_metric, entropy, locate_stall
 from panga.iterators import window
 
-__all__ = ('SimpleMetrics', 'MockMetrics', 'StandardMetrics', 'StandardMinionMetrics', 'StandardMinknowMetrics', 'SummaryMetrics', 'SolidStateMetrics', 'BlockingMetrics')
+__all__ = ('SimpleMetrics', 'MockMetrics', 'StandardMetrics', 'StandardMinionMetrics', 'StandardMinknowMetrics', 'SummaryMetrics', 'SolidStateMetrics', 'BlockingMetrics', 'SummaryAndStandardMetrics')
 
 
 class SimpleMetrics(MetricBase):
@@ -128,3 +128,8 @@ class BlockingMetrics(StandardMinionMetrics):
                      window_start=start, window_length=end-start, func_to_apply=np.median)
             )
         super(BlockingMetrics, self).__init__(splitter, channel_meta=channel_meta)
+
+
+class SummaryAndStandardMetrics(SummaryMetrics, StandardMetrics):
+    pass
+

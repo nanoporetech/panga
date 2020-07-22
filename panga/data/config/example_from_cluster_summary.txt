@@ -1,0 +1,16 @@
+read_builder:
+  components:                   # specify options specific to individual components
+    splitter:                   # choose how we will segment the channel into reads
+      SummarySplit:             # use split points from an input summary file
+        with_events: True       # if True, load events from the fast5 file
+        with_states: False      # if True, add channel state data (mux and channel states) from the fast5 (this slows things down).
+    metrifier:                  # choose what component we want to calculate metrics
+      SummaryAndStandardMetrics: # (re)calculate a standard set of metrics from event data and include summary metrics.
+    classifier:                 # choose the classifier
+      MetricClassifier:         # don't recompute classifications
+        class_metric: 'cluster' # use cluster as read class
+        time_since: null        # don't track time since strand, as we don't know which cluster it is. 
+    second_stage:               # option to tag on a second pipeline at the end of the first`:x
+      PassStage:                # don't do anything in the second pipeline
+    accumulator:                # choose what summary or plot outputs we want
+      MetricSummary:            # this will generate a read summary - no need for strand summary as it will be empty.

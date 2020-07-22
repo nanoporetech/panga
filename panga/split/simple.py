@@ -535,16 +535,21 @@ class SummarySplit(Fast5Split):
 
         if self.with_events:
             if set(['start_event', 'end_event']).issubset(self.meta_keys):
-                get_events = lambda meta: f5.get_events(self.channel, event_indices=(meta['start_event'], meta['end_event']))
+                get_event_bounds = lambda meta: dict(event_indices=(meta['start_event'], meta['end_event']))
             else:
                 logger.warn('Reading events using timings, this will be slow.')
-                get_events = lambda meta: f5.get_events(self.channel, times=(meta['start_time'], meta['start_time'] + meta['duration']))
+                get_event_bounds = lambda meta: dict(times=(meta['start_time'], meta['start_time'] + meta['duration']))
 
         for meta in self.iterate_input_file():
             read_events = None
             if self.with_events:
-                read_events = get_events(meta)
+                event_bounds = get_event_bounds(meta)
+                read_events = f5.get_events(self.channel, **event_bounds)
                 read_events = self._convert_event_fields(read_events, f5.sample_rate)
+                if len(read_events) == 0:
+                    msg = 'Skipping read ch {} {} as it spans no events.'
+                    logger.warn(msg.format(self.channel, ' '.join('{} {}'.format(k, v) for k,v in event_bounds.items())))
+                    continue
             read_raw = None
             if self.with_raw:
                 read_raw = f5.get_raw(self.channel, times=(meta['start_time'], meta['start_time'] + meta['duration']), use_scaling=False)

@@ -1,6 +1,6 @@
 from panga.classify.base import ClassifyBase
 
-__all__ = ('SimpleClassifier', 'DeltaClassifier', 'StandardClassifier')
+__all__ = ('SimpleClassifier', 'DeltaClassifier', 'StandardClassifier', 'MetricClassifier')
 
 
 class SimpleClassifier(ClassifyBase):
@@ -124,3 +124,21 @@ class StandardClassifier(ClassifyBase):
         metric_names = [t[0] for t in self.to_inject]
         requires = list(set(requires).union(set(metric_names)))
         return requires
+
+
+class MetricClassifier(StandardClassifier):
+    """Set read class from an existing metric without any is_satured checks."""
+
+    @property
+    def requires(self):
+        requires = []
+        if self.class_metric is not None:  # could be None in derived classes
+            requires.append(self.class_metric)
+        if self.recovered_classes is not None:
+            requires.append('mux')
+        # update requires with metrics to inject
+        requires = self._add_inject_requires(requires)
+        return requires
+
+    def _process_read(self, metrics):
+        return self._classify_read(metrics)
