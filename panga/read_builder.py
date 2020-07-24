@@ -119,8 +119,8 @@ def get_argparser():
     parser.add_argument('--max_time', type=float, default=np.inf, help='Stop processing reads after a certain time.')
     parser.add_argument('--jobs', default=1, type=int, help='Number of processes to use.')
     parser.add_argument('--fast5', action=cmdargs.FileExists, help='Bulk fast5 file for input.')
-    parser.add_argument('--outpath', help='Output directory (should not already exist)')
-    parser.add_argument('--summary_file', help='Metric output summary filename.')
+    parser.add_argument('--outpath', help='Output directory (should not already exist)', default='read_builder')
+    parser.add_argument('--summary_file', help='Metric output summary filename.', default='read_summary.txt')
     parser.add_argument('--prefix', type=str, default='', help='prefixed to output files.')
     parser.add_argument('--meta', type=str, default=None, action=ParseJsonDictAction,
                         help='JSON meta string (e.g. \'{"run":"asd123"}\'.')
@@ -135,10 +135,10 @@ def get_argparser():
 def load_yaml_config(yaml_conf):
     try:
         if hasattr(yaml_conf, 'readline'):
-            conf = yaml.load(yaml_conf)
+            conf = yaml.safe_load(yaml_conf)
         else:
             with open(yaml_conf, 'r') as fh:
-                conf = yaml.load(fh)
+                conf = yaml.safe_load(fh)
     except:
         raise RuntimeError('Could not parse your yaml file {}, check it is correctly formatted'.format(yaml_conf))
     return conf
