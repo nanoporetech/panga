@@ -3,6 +3,8 @@ import operator
 import numpy as np
 from scipy.stats import entropy as scipy_entropy
 
+from panga.iterators import window
+
 def _apply_to_field(function, field, obj):
     return function(obj[field])
 
@@ -233,3 +235,44 @@ def locate_stall(events, mad_estimate_events=100):
         stall_length, stall_median, stall_range = 0, 0, 0
 
     return stall_length, stall_median, stall_range
+
+
+def filled_window(data, up, down, fill):
+    """Create a moving window across input data with boundary windows
+    padded with fill value.
+
+    :param up: higher offset index position
+    :param down: lower offset index position, should be negative to indicate
+        position prior to the considered position.
+    :param fill: value to use to fill boundaries.
+
+    """
+    wlen = up - down + 1
+    for i in xrange(abs(down)):
+        s = abs(down)-i
+        yield np.concatenate(([fill]*s, data[:wlen-s]))
+    for w in window(data, wlen):
+        yield np.array(w)
+    for i in xrange(abs(up)):
+        s = abs(up)-i
+        yield np.concatenate((data[-(wlen-s):], [fill]*s))
+
+
+def sliding_metric(data, metric, up, down, fill):
+    """Calculate metric over moving window across input data where boundary
+    windows are padded with fill value.
+
+    :param data: array-like
+    :param metric: metric to be applied over the window
+    :param up: higher offset index position
+    :param down: lower offset index position, should be negative to indicate
+        position prior to the considered position
+    :param fill: value to use to fill boundaries
+
+    :returns: array of length data
+
+    .. note: where there are undefined window elements either side of central index
+        (i.e. at the ends of the array) window is padded with fill prior to applying metric
+    """
+    return np.array([metric(window) for window in filled_window(
+        data, up, down, fill)])
