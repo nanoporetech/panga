@@ -1,0 +1,451 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.split package &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="panga.stage package" href="panga.stage.html" />
+    <link rel="prev" title="panga.metric package" href="panga.metric.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="panga.html">panga package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="panga.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="panga.accumulate.html">panga.accumulate package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.algorithm.html">panga.algorithm package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.classify.html">panga.classify package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.conclude.html">panga.conclude package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.data.html">panga.data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.metric.html">panga.metric package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">panga.split package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.split.base">panga.split.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.split.simple">panga.split.simple module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.split">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="panga.stage.html">panga.stage package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.cmdargs">panga.cmdargs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.fileio">panga.fileio module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.iterators">panga.iterators module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.read_builder">panga.read_builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.util">panga.util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="panga.html">panga package</a> &raquo;</li>
+        
+      <li>panga.split package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/panga.split.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="panga-split-package">
+<h1>panga.split package<a class="headerlink" href="#panga-split-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-panga.split.base">
+<span id="panga-split-base-module"></span><h2>panga.split.base module<a class="headerlink" href="#module-panga.split.base" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.split.base.Read">
+<em class="property">class </em><code class="descclassname">panga.split.base.</code><code class="descname">Read</code><span class="sig-paren">(</span><em>events=None</em>, <em>raw=None</em>, <em>meta=None</em>, <em>channel_meta=None</em>, <em>context_meta=None</em>, <em>tracking_meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/base.html#Read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.base.Read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="panga.split.base.Read.raw">
+<code class="descname">raw</code><a class="headerlink" href="#panga.split.base.Read.raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.split.base.SplitBase">
+<em class="property">class </em><code class="descclassname">panga.split.base.</code><code class="descname">SplitBase</code><a class="reference internal" href="_modules/panga/split/base.html#SplitBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.base.SplitBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="panga.split.base.SplitBase.meta_keys">
+<code class="descname">meta_keys</code><a class="headerlink" href="#panga.split.base.SplitBase.meta_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.base.SplitBase.provides_events">
+<code class="descname">provides_events</code><a class="headerlink" href="#panga.split.base.SplitBase.provides_events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.base.SplitBase.provides_raw">
+<code class="descname">provides_raw</code><a class="headerlink" href="#panga.split.base.SplitBase.provides_raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="panga.split.base.SplitBase.reads">
+<code class="descname">reads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/base.html#SplitBase.reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.base.SplitBase.reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield read data.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.split.simple">
+<span id="panga-split-simple-module"></span><h2>panga.split.simple module<a class="headerlink" href="#module-panga.split.simple" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.split.simple.FixedInterval">
+<em class="property">class </em><code class="descclassname">panga.split.simple.</code><code class="descname">FixedInterval</code><span class="sig-paren">(</span><em>fast5</em>, <em>channel</em>, <em>interval=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#FixedInterval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.FixedInterval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.split.base.SplitBase" title="panga.split.base.SplitBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.split.base.SplitBase</span></code></a></p>
+<dl class="attribute">
+<dt id="panga.split.simple.FixedInterval.meta_keys">
+<code class="descname">meta_keys</code><a class="headerlink" href="#panga.split.simple.FixedInterval.meta_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.FixedInterval.provides_events">
+<code class="descname">provides_events</code><a class="headerlink" href="#panga.split.simple.FixedInterval.provides_events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.FixedInterval.provides_raw">
+<code class="descname">provides_raw</code><a class="headerlink" href="#panga.split.simple.FixedInterval.provides_raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="panga.split.simple.FixedInterval.reads">
+<code class="descname">reads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#FixedInterval.reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.FixedInterval.reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield read data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.split.simple.Fast5Split">
+<em class="property">class </em><code class="descclassname">panga.split.simple.</code><code class="descname">Fast5Split</code><span class="sig-paren">(</span><em>fast5</em>, <em>channel</em>, <em>with_events=False</em>, <em>with_raw=False</em>, <em>max_time=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#Fast5Split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.Fast5Split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.split.base.SplitBase" title="panga.split.base.SplitBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.split.base.SplitBase</span></code></a></p>
+<dl class="method">
+<dt id="panga.split.simple.Fast5Split.load_fast5_meta">
+<code class="descname">load_fast5_meta</code><span class="sig-paren">(</span><em>fh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#Fast5Split.load_fast5_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.Fast5Split.load_fast5_meta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.Fast5Split.meta_keys">
+<code class="descname">meta_keys</code><a class="headerlink" href="#panga.split.simple.Fast5Split.meta_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.Fast5Split.provides_events">
+<code class="descname">provides_events</code><a class="headerlink" href="#panga.split.simple.Fast5Split.provides_events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.Fast5Split.provides_raw">
+<code class="descname">provides_raw</code><a class="headerlink" href="#panga.split.simple.Fast5Split.provides_raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="panga.split.simple.Fast5Split.reads">
+<code class="descname">reads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#Fast5Split.reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.Fast5Split.reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield <cite>Reads</cite> with various meta data provided by MinKnow.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.split.simple.DeltaSplit">
+<em class="property">class </em><code class="descclassname">panga.split.simple.</code><code class="descname">DeltaSplit</code><span class="sig-paren">(</span><em>fast5</em>, <em>channel</em>, <em>with_events=True</em>, <em>with_raw=False</em>, <em>delta=90</em>, <em>look_back=3</em>, <em>max_time=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#DeltaSplit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.DeltaSplit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.split.simple.Fast5Split" title="panga.split.simple.Fast5Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.split.simple.Fast5Split</span></code></a></p>
+<dl class="attribute">
+<dt id="panga.split.simple.DeltaSplit.meta_keys">
+<code class="descname">meta_keys</code><a class="headerlink" href="#panga.split.simple.DeltaSplit.meta_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="panga.split.simple.DeltaSplit.reads">
+<code class="descname">reads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#DeltaSplit.reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.DeltaSplit.reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield <cite>Reads</cite> obtained from delta splitting.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.split.simple.RandomData">
+<em class="property">class </em><code class="descclassname">panga.split.simple.</code><code class="descname">RandomData</code><span class="sig-paren">(</span><em>n_reads=10</em>, <em>read_length=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#RandomData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.RandomData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.split.base.SplitBase" title="panga.split.base.SplitBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.split.base.SplitBase</span></code></a></p>
+<dl class="attribute">
+<dt id="panga.split.simple.RandomData.meta_keys">
+<code class="descname">meta_keys</code><a class="headerlink" href="#panga.split.simple.RandomData.meta_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.RandomData.provides_events">
+<code class="descname">provides_events</code><a class="headerlink" href="#panga.split.simple.RandomData.provides_events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.RandomData.provides_raw">
+<code class="descname">provides_raw</code><a class="headerlink" href="#panga.split.simple.RandomData.provides_raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="panga.split.simple.RandomData.reads">
+<code class="descname">reads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#RandomData.reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.RandomData.reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield read data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.split.simple.AdaptiveThreshold">
+<em class="property">class </em><code class="descclassname">panga.split.simple.</code><code class="descname">AdaptiveThreshold</code><span class="sig-paren">(</span><em>fast5</em>, <em>channel</em>, <em>outpath</em>, <em>prefix</em>, <em>with_raw=False</em>, <em>max_time=inf</em>, <em>pore_rank=0</em>, <em>capture_rank=1</em>, <em>thresh_factor=0.9</em>, <em>fixed_threshold=None</em>, <em>rolling_window=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#AdaptiveThreshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.AdaptiveThreshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.split.simple.Fast5Split" title="panga.split.simple.Fast5Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.split.simple.Fast5Split</span></code></a></p>
+<dl class="attribute">
+<dt id="panga.split.simple.AdaptiveThreshold.meta_keys">
+<code class="descname">meta_keys</code><a class="headerlink" href="#panga.split.simple.AdaptiveThreshold.meta_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.AdaptiveThreshold.provides_events">
+<code class="descname">provides_events</code><a class="headerlink" href="#panga.split.simple.AdaptiveThreshold.provides_events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.AdaptiveThreshold.provides_raw">
+<code class="descname">provides_raw</code><a class="headerlink" href="#panga.split.simple.AdaptiveThreshold.provides_raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="panga.split.simple.AdaptiveThreshold.reads">
+<code class="descname">reads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#AdaptiveThreshold.reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.AdaptiveThreshold.reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield <cite>Reads</cite> with various meta data provided by MinKnow.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.split.simple.SummarySplit">
+<em class="property">class </em><code class="descclassname">panga.split.simple.</code><code class="descname">SummarySplit</code><span class="sig-paren">(</span><em>input_summary</em>, <em>channel</em>, <em>fast5=None</em>, <em>with_events=False</em>, <em>with_raw=False</em>, <em>with_states=False</em>, <em>max_time=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#SummarySplit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.SummarySplit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.split.simple.Fast5Split" title="panga.split.simple.Fast5Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.split.simple.Fast5Split</span></code></a></p>
+<dl class="method">
+<dt id="panga.split.simple.SummarySplit.iterate_input_file">
+<code class="descname">iterate_input_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#SummarySplit.iterate_input_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.SummarySplit.iterate_input_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.SummarySplit.meta_keys">
+<code class="descname">meta_keys</code><a class="headerlink" href="#panga.split.simple.SummarySplit.meta_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="panga.split.simple.SummarySplit.reads">
+<code class="descname">reads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/split/simple.html#SummarySplit.reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.split.simple.SummarySplit.reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield <cite>Reads</cite> with various meta data provided by MinKnow.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="panga.split.simple.SummarySplit.requires_meta">
+<code class="descname">requires_meta</code><a class="headerlink" href="#panga.split.simple.SummarySplit.requires_meta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.split">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-panga.split" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="panga.stage.html" class="btn btn-neutral float-right" title="panga.stage package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="panga.metric.html" class="btn btn-neutral float-left" title="panga.metric package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

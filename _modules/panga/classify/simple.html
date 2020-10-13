@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.classify.simple &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../panga.html">panga package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>panga.classify.simple</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for panga.classify.simple</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">panga.classify.base</span> <span class="kn">import</span> <span class="n">ClassifyBase</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;SimpleClassifier&#39;</span><span class="p">,</span> <span class="s1">&#39;DeltaClassifier&#39;</span><span class="p">,</span> <span class="s1">&#39;StandardClassifier&#39;</span><span class="p">,</span> <span class="s1">&#39;MetricClassifier&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SimpleClassifier"><a class="viewcode-back" href="../../../panga.classify.html#panga.classify.simple.SimpleClassifier">[docs]</a><span class="k">class</span> <span class="nc">SimpleClassifier</span><span class="p">(</span><span class="n">ClassifyBase</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrifier</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Example classifier which simply examines the metric `mean`</span>
+<span class="sd">        to determine the class of a read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleClassifier</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metrifier</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_reads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;median_current&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+        <span class="c1"># Note the [0] here because the interface dictates that we get passed</span>
+        <span class="c1">#   a tuple of metrics for a window of reads.</span>
+        <span class="k">if</span> <span class="n">metrics</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;median_current&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">150</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;pore&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;not_pore&#39;</span></div>
+
+
+<div class="viewcode-block" id="DeltaClassifier"><a class="viewcode-back" href="../../../panga.classify.html#panga.classify.simple.DeltaClassifier">[docs]</a><span class="k">class</span> <span class="nc">DeltaClassifier</span><span class="p">(</span><span class="n">ClassifyBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Classify reads according to mean current before, during, and after.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrifier</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DeltaClassifier</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metrifier</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_reads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">3</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+        <span class="n">delta0</span> <span class="o">=</span> <span class="s1">&#39;down&#39;</span> <span class="k">if</span> <span class="n">metrics</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">metrics</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;up&quot;</span>
+        <span class="n">delta1</span> <span class="o">=</span> <span class="s1">&#39;down&#39;</span> <span class="k">if</span> <span class="n">metrics</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">metrics</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;up&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">delta0</span><span class="p">,</span> <span class="n">delta1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardClassifier"><a class="viewcode-back" href="../../../panga.classify.html#panga.classify.simple.StandardClassifier">[docs]</a><span class="k">class</span> <span class="nc">StandardClassifier</span><span class="p">(</span><span class="n">ClassifyBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrifier</span><span class="p">,</span> <span class="n">class_metric</span><span class="o">=</span><span class="s1">&#39;initial_classification&#39;</span><span class="p">,</span>
+                 <span class="n">to_inject</span><span class="o">=</span><span class="p">((</span><span class="s1">&#39;median_current&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;_before&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+                            <span class="p">(</span><span class="s1">&#39;median_current&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;_after&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)),</span>
+                 <span class="n">time_since</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;strand&#39;</span><span class="p">,),</span> <span class="n">recovered_classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">state_classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set read class from an existing metric.</span>
+
+<span class="sd">        :param class_metric: str, key for read metric used as class.</span>
+<span class="sd">        :param to_inject metrics: iterable of tuples of (key, offset, suffix, fill)</span>
+<span class="sd">            where key is the metric key, offset is the int offset relative to</span>
+<span class="sd">            the central read, the str suffix is appended to the metric key, and fill</span>
+<span class="sd">            is the value assigned if the metrics of the proceeding read are None</span>
+<span class="sd">            (which might happen for the first/last read).</span>
+<span class="sd">        :param time_since: str, if not None, inject time since the last read</span>
+<span class="sd">            classed with the provided class filter.</span>
+<span class="sd">        :param recovered_classes: iterable of str, if not None, inject boolean asserting</span>
+<span class="sd">            whether the read class of the next read is in recovered_classes.</span>
+<span class="sd">        :param state_classes: iterable of str, if not None, inject state metrics</span>
+<span class="sd">            e.g. n_&lt;class&gt;_local for each class in state_classes. See ClassifyBase for details.</span>
+
+<span class="sd">        ..note:: if read metrics contain &#39;is_saturated==True&#39; this will</span>
+<span class="sd">            override the classification scheme.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            to_inject=((&#39;median_current&#39;, -1, &#39;_before&#39;, 0.0)) would inject the new</span>
+<span class="sd">            metric &#39;median_current_before&#39; with the value of the</span>
+<span class="sd">            &#39;median_current&#39; of the preceeding read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_metric</span> <span class="o">=</span> <span class="n">class_metric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_inject</span> <span class="o">=</span> <span class="n">to_inject</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inject_time_since</span> <span class="o">=</span> <span class="n">time_since</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recovered_classes</span> <span class="o">=</span> <span class="n">recovered_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovered_classes</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StandardClassifier</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metrifier</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_reads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">3</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;is_saturated&#39;</span><span class="p">,</span> <span class="s1">&#39;is_multiple&#39;</span><span class="p">,</span> <span class="s1">&#39;is_off&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_metric</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># could be None in derived classes</span>
+            <span class="n">requires</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_metric</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovered_classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">requires</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;mux&#39;</span><span class="p">)</span>
+        <span class="c1"># update requires with metrics to inject</span>
+        <span class="n">requires</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_inject_requires</span><span class="p">(</span><span class="n">requires</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">requires</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+        <span class="n">klass</span> <span class="o">=</span> <span class="s1">&#39;unclassed&#39;</span>
+        <span class="c1"># if channel is off, change read class</span>
+        <span class="k">if</span> <span class="s1">&#39;is_off&#39;</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">central_read</span><span class="p">]</span> <span class="ow">and</span> <span class="n">metrics</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">central_read</span><span class="p">][</span><span class="s1">&#39;is_off&#39;</span><span class="p">]:</span>
+            <span class="n">klass</span> <span class="o">=</span> <span class="s1">&#39;off&#39;</span>
+        <span class="c1"># If it is in the multiple pore state, no matter what,</span>
+        <span class="k">if</span> <span class="s1">&#39;is_multiple&#39;</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">central_read</span><span class="p">]</span> <span class="ow">and</span> <span class="n">metrics</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">central_read</span><span class="p">][</span><span class="s1">&#39;is_multiple&#39;</span><span class="p">]:</span>
+            <span class="n">klass</span> <span class="o">=</span> <span class="s1">&#39;multiple&#39;</span>
+        <span class="c1"># If it is saturated, no matter what (overwriting any potential multiple state)</span>
+        <span class="k">if</span> <span class="s1">&#39;is_saturated&#39;</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">central_read</span><span class="p">]</span> <span class="ow">and</span> <span class="n">metrics</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">central_read</span><span class="p">][</span><span class="s1">&#39;is_saturated&#39;</span><span class="p">]:</span>
+            <span class="n">klass</span> <span class="o">=</span> <span class="s1">&#39;saturated&#39;</span>
+        <span class="k">if</span> <span class="n">klass</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;saturated&#39;</span><span class="p">,</span> <span class="s1">&#39;multiple&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">]:</span>
+            <span class="n">klass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_classify_read</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">klass</span>
+
+    <span class="k">def</span> <span class="nf">_classify_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">central_read</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">class_metric</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_add_inject_requires</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requires</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update requires list with base names of metrics to be injected&quot;&quot;&quot;</span>
+        <span class="n">metric_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_inject</span><span class="p">]</span>
+        <span class="n">requires</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">requires</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metric_names</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">requires</span></div>
+
+
+<div class="viewcode-block" id="MetricClassifier"><a class="viewcode-back" href="../../../panga.classify.html#panga.classify.simple.MetricClassifier">[docs]</a><span class="k">class</span> <span class="nc">MetricClassifier</span><span class="p">(</span><span class="n">StandardClassifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set read class from an existing metric without any is_satured checks.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">requires</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_metric</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># could be None in derived classes</span>
+            <span class="n">requires</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_metric</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovered_classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">requires</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;mux&#39;</span><span class="p">)</span>
+        <span class="c1"># update requires with metrics to inject</span>
+        <span class="n">requires</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_inject_requires</span><span class="p">(</span><span class="n">requires</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">requires</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_classify_read</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

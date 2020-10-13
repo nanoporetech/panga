@@ -1,0 +1,10 @@
+panga.data.config package
+=========================
+
+Module contents
+---------------
+
+.. automodule:: panga.data.config
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,675 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.read_builder &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../panga.html">panga package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>panga.read_builder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for panga.read_builder</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">Queue</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">funcsigs</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span><span class="p">;</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># enforce non-interactive backend</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">from</span> <span class="nn">cStringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">fast5_research.fast5_bulk</span> <span class="kn">import</span> <span class="n">BulkFast5</span>
+<span class="kn">from</span> <span class="nn">panga</span> <span class="kn">import</span> <span class="n">cmdargs</span>
+
+<span class="kn">from</span> <span class="nn">panga</span> <span class="kn">import</span> <span class="n">split</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">classify</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">accumulate</span><span class="p">,</span> <span class="n">conclude</span>
+<span class="kn">from</span> <span class="nn">panga.util</span> <span class="kn">import</span> <span class="n">add_prefix</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">default_config</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">read_builder:</span>
+<span class="s2">    components:</span>
+<span class="s2">        splitter:</span>
+<span class="s2">            RandomData:</span>
+<span class="s2">        metrifier:</span>
+<span class="s2">            StandardMetrics:</span>
+<span class="s2">        classifier:</span>
+<span class="s2">            SimpleClassifier:</span>
+<span class="s2">        second_stage:</span>
+<span class="s2">            PassStage:</span>
+<span class="s2">        accumulator:</span>
+<span class="s2">            MetricSummary:</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<span class="c1"># Build a dictionary of available component types</span>
+<span class="n">single_component_modules</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span>  <span class="c1"># use only one of these</span>
+        <span class="p">(</span><span class="s1">&#39;splitter&#39;</span><span class="p">,</span> <span class="s1">&#39;metrifier&#39;</span><span class="p">,</span> <span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="s1">&#39;second_stage&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">split</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">classify</span><span class="p">,</span> <span class="n">stage</span><span class="p">))</span>
+<span class="p">)</span>
+<span class="n">multi_component_modules</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span>  <span class="c1"># use one of more of these</span>
+        <span class="p">(</span><span class="s1">&#39;accumulator&#39;</span><span class="p">,</span> <span class="s1">&#39;concluder&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">accumulate</span><span class="p">,</span> <span class="n">conclude</span><span class="p">))</span>
+<span class="p">)</span>
+<span class="n">component_modules</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">single_component_modules</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="o">+</span> <span class="n">multi_component_modules</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="n">required_components</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">component_modules</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;concluder&#39;</span><span class="p">])</span>  <span class="c1"># concluders are optional</span>
+<span class="n">components</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">name</span><span class="p">:[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;Base&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">]</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">component_modules</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="make_resolver"><a class="viewcode-back" href="../../panga.html#panga.read_builder.make_resolver">[docs]</a><span class="k">def</span> <span class="nf">make_resolver</span><span class="p">(</span><span class="n">my_component</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create and argparse.action to set a component class.&quot;&quot;&quot;</span>
+    <span class="k">class</span> <span class="nc">MyResolver</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+        <span class="n">component</span> <span class="o">=</span> <span class="n">my_component</span>
+        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">MyResolver</span></div>
+
+
+<div class="viewcode-block" id="SetReadRulesAction"><a class="viewcode-back" href="../../panga.html#panga.read_builder.SetReadRulesAction">[docs]</a><span class="k">class</span> <span class="nc">SetReadRulesAction</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set classifier component when read rule config is given.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">classify</span><span class="o">.</span><span class="n">ReadRules</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;File/path for &#39;</span><span class="si">{}</span><span class="s2">&#39; does not exist, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ParseJsonDictAction"><a class="viewcode-back" href="../../panga.html#panga.read_builder.ParseJsonDictAction">[docs]</a><span class="k">class</span> <span class="nc">ParseJsonDictAction</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse JSON str into a dict.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">meta_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is not a valid JSON string&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> did not parse as a dict.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">meta_dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MoreHelpAction"><a class="viewcode-back" href="../../panga.html#panga.read_builder.MoreHelpAction">[docs]</a><span class="k">class</span> <span class="nc">MoreHelpAction</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse JSON str of a list of lists into a tuple of tuples.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">List of panga components which can be used in read_builder:</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="k">for</span> <span class="n">component</span><span class="p">,</span> <span class="n">klasses</span>  <span class="ow">in</span> <span class="n">components</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">print</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="se">\n\t</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">klasses</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># fetch docstring of a component</span>
+            <span class="n">klass</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">component</span><span class="p">,</span> <span class="n">klasses</span> <span class="ow">in</span> <span class="n">components</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">klasses</span><span class="p">:</span>
+                    <span class="n">klass</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">component_modules</span><span class="p">[</span><span class="n">component</span><span class="p">],</span> <span class="n">values</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">klass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is an unrecognised class.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+            <span class="c1"># print initialiser doc string which should show params and their meaning</span>
+            <span class="nb">print</span> <span class="n">klass</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="get_argparser"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_argparser">[docs]</a><span class="k">def</span> <span class="nf">get_argparser</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Analyse channel states to output read classification summary.&#39;</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--more_help&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">MoreHelpAction</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Show list of components. If a specific component is provided, print its doc string.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--channels&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;Channel List&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">cmdargs</span><span class="o">.</span><span class="n">ExpandRanges</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Channels to process, default is all channels.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--max_time&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Stop processing reads after a certain time.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--jobs&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of processes to use.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--fast5&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">cmdargs</span><span class="o">.</span><span class="n">FileExists</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Bulk fast5 file for input.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--outpath&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Output directory (should not already exist)&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;read_builder&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summary_file&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Metric output summary filename.&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;read_summary.txt&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--prefix&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;prefixed to output files.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--meta&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">ParseJsonDictAction</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;JSON meta string (e.g. </span><span class="se">\&#39;</span><span class="s1">{&quot;run&quot;:&quot;asd123&quot;}</span><span class="se">\&#39;</span><span class="s1">.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--input_summary&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">cmdargs</span><span class="o">.</span><span class="n">FileExists</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Input summary for splitting/metrics&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--config&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">cmdargs</span><span class="o">.</span><span class="n">FileExists</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Read_builder config.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--config_out&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Write config.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--config_only&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Use only config options, use this for rerunning an outputed config.&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+<div class="viewcode-block" id="load_yaml_config"><a class="viewcode-back" href="../../panga.html#panga.read_builder.load_yaml_config">[docs]</a><span class="k">def</span> <span class="nf">load_yaml_config</span><span class="p">(</span><span class="n">yaml_conf</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">yaml_conf</span><span class="p">,</span> <span class="s1">&#39;readline&#39;</span><span class="p">):</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">yaml_conf</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">yaml_conf</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">conf</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Could not parse your yaml file </span><span class="si">{}</span><span class="s1">, check it is correctly formatted&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">yaml_conf</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">conf</span></div>
+
+<div class="viewcode-block" id="resolve_rules_config"><a class="viewcode-back" href="../../panga.html#panga.read_builder.resolve_rules_config">[docs]</a><span class="k">def</span> <span class="nf">resolve_rules_config</span><span class="p">(</span><span class="n">config_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;If a ReadRules rules arg points to a file, load the rules from that file&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;ReadRules&#39;</span> <span class="ow">in</span> <span class="n">config_dict</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">][</span><span class="s1">&#39;classifier&#39;</span><span class="p">]:</span>
+        <span class="n">read_rules_args</span> <span class="o">=</span> <span class="n">config_dict</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">][</span><span class="s1">&#39;classifier&#39;</span><span class="p">][</span><span class="s1">&#39;ReadRules&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;rules&#39;</span> <span class="ow">in</span> <span class="n">read_rules_args</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;ReadRules requires a rules option&#39;</span><span class="p">)</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="n">read_rules_args</span><span class="p">[</span><span class="s1">&#39;rules&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># assume this points to a yaml file</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Loading ReadRules config from : </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rules</span><span class="p">))</span>
+            <span class="n">loaded</span> <span class="o">=</span> <span class="n">load_yaml_config</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;parameters&#39;</span> <span class="ow">in</span> <span class="n">loaded</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">&#39;rules_in_execution_order&#39;</span> <span class="ow">in</span> <span class="n">loaded</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]:</span>
+                <span class="n">rules_lines</span> <span class="o">=</span> <span class="n">loaded</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">][</span><span class="s1">&#39;rules_in_execution_order&#39;</span><span class="p">]</span>
+                <span class="n">read_rules_args</span><span class="p">[</span><span class="s1">&#39;rules&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rules_lines</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;ReadRules config could not be read from </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rules</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="get_class_arg_store"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_class_arg_store">[docs]</a><span class="k">def</span> <span class="nf">get_class_arg_store</span><span class="p">(</span><span class="n">arg_store</span><span class="p">):</span>
+
+    <span class="n">components_sec</span> <span class="o">=</span> <span class="s1">&#39;components&#39;</span>
+    <span class="k">if</span> <span class="n">components_sec</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">arg_store</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;A components section is required in your config&#39;</span><span class="p">)</span>
+
+    <span class="c1"># copy arg_store into new dict where component keys are classes instead of</span>
+    <span class="c1"># strings of class names</span>
+    <span class="n">class_arg_store</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">arg_store</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">arg_store</span><span class="p">[</span><span class="n">components_sec</span><span class="p">])</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="n">required_components</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Not all required components were specified. Missing </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">required_components</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">arg_store</span><span class="p">[</span><span class="n">components_sec</span><span class="p">])))</span>
+
+    <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">arg_store</span><span class="p">[</span><span class="n">components_sec</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">component</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Unknown component type </span><span class="si">{}</span><span class="s1">, use one of </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="c1"># check we only have 1 splitter, metrifier and classifier</span>
+        <span class="k">if</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">single_component_modules</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">arg_store</span><span class="p">[</span><span class="n">components_sec</span><span class="p">][</span><span class="n">component</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Only 1 </span><span class="si">{}</span><span class="s1"> should be specified, found </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">klass_name</span> <span class="ow">in</span> <span class="n">arg_store</span><span class="p">[</span><span class="n">components_sec</span><span class="p">][</span><span class="n">component</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">klass_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">components</span><span class="p">[</span><span class="n">component</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Unknown </span><span class="si">{}</span><span class="s1"> class `</span><span class="si">{}</span><span class="s1">`, use one of </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">klass_name</span><span class="p">,</span> <span class="n">components</span><span class="p">[</span><span class="n">component</span><span class="p">]))</span>
+            <span class="n">klass</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">component_modules</span><span class="p">[</span><span class="n">component</span><span class="p">],</span> <span class="n">klass_name</span><span class="p">)</span>
+            <span class="c1"># index class options by class instead of class name</span>
+            <span class="n">class_arg_store</span><span class="p">[</span><span class="n">components_sec</span><span class="p">][</span><span class="n">component</span><span class="p">][</span><span class="n">klass</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg_store</span><span class="p">[</span><span class="n">components_sec</span><span class="p">][</span><span class="n">component</span><span class="p">][</span><span class="n">klass_name</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">class_arg_store</span><span class="p">[</span><span class="n">components_sec</span><span class="p">][</span><span class="n">component</span><span class="p">][</span><span class="n">klass_name</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">class_arg_store</span></div>
+
+<div class="viewcode-block" id="process_args"><a class="viewcode-back" href="../../panga.html#panga.read_builder.process_args">[docs]</a><span class="k">def</span> <span class="nf">process_args</span><span class="p">(</span><span class="n">arguments</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Read and do an initial manipulation of inputs into a dict.</span>
+
+<span class="sd">    :param arguments: list of arguments</span>
+<span class="sd">    :return: dict, argstore of options organised by component class.</span>
+<span class="sd">    :return: str,  all options as yaml str.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># load cmd line args and copy to a dict</span>
+    <span class="n">cmdline_args</span> <span class="o">=</span> <span class="n">get_argparser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span><span class="o">.</span><span class="vm">__dict__</span>
+
+    <span class="n">configs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;config_out&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">configs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">cmdline_args</span><span class="p">:</span>
+            <span class="n">configs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmdline_args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">cmdline_args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="c1"># if a config was specified on the command line, load it</span>
+    <span class="n">section_name</span> <span class="o">=</span> <span class="s1">&#39;read_builder&#39;</span>
+    <span class="k">if</span> <span class="n">configs</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">arg_store</span> <span class="o">=</span> <span class="n">load_yaml_config</span><span class="p">(</span><span class="n">configs</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])[</span><span class="n">section_name</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">arg_store</span> <span class="o">=</span> <span class="n">load_yaml_config</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">default_config</span><span class="p">))[</span><span class="n">section_name</span><span class="p">]</span>
+
+    <span class="c1"># update arg_store with cmdline args (without config names)</span>
+    <span class="c1"># except if we are running from an outputed config, where everything we need</span>
+    <span class="c1"># should be in the config</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cmdline_args</span><span class="p">[</span><span class="s1">&#39;config_only&#39;</span><span class="p">]:</span>
+        <span class="n">arg_store</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cmdline_args</span><span class="p">)</span>
+
+    <span class="c1"># check if we need to load a ReadRules config (a Minknow read classifier yaml)</span>
+    <span class="n">resolve_rules_config</span><span class="p">(</span><span class="n">arg_store</span><span class="p">)</span>
+
+    <span class="c1"># check components and replace component class names with actual classes</span>
+    <span class="n">class_arg_store</span> <span class="o">=</span> <span class="n">get_class_arg_store</span><span class="p">(</span><span class="n">arg_store</span><span class="p">)</span>
+
+    <span class="c1"># add &#39;config_out&#39; to class_arg_store so we can later write a yml</span>
+    <span class="n">class_arg_store</span><span class="p">[</span><span class="s1">&#39;config_out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">configs</span><span class="p">[</span><span class="s1">&#39;config_out&#39;</span><span class="p">]</span>
+
+    <span class="c1"># create yaml string which can be later written out</span>
+    <span class="n">yaml_conf_out</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span><span class="n">section_name</span><span class="p">:</span><span class="n">arg_store</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">class_arg_store</span><span class="p">,</span> <span class="n">yaml_conf_out</span></div>
+
+
+<div class="viewcode-block" id="get_class_args"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_class_args">[docs]</a><span class="k">def</span> <span class="nf">get_class_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">class_args</span><span class="p">,</span> <span class="n">arg_store</span><span class="p">,</span> <span class="n">presets</span><span class="o">=</span><span class="nb">dict</span><span class="p">()):</span>
+    <span class="sd">&quot;&quot;&quot;Resolve the arguments to be used for a component.</span>
+
+<span class="sd">    :param cls: the component class</span>
+<span class="sd">    :param cls_args: dict of arguments specific to this class, will be used in</span>
+<span class="sd">           preference to args in `arg_store`. If None, will be ignored.</span>
+<span class="sd">    :param arg_store: namespace containing all possible arguments</span>
+<span class="sd">    :param preset: preset argument values, may correspond to postional or</span>
+<span class="sd">        keyword arguments. Will be used in preference to any others..</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">funcsigs</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
+    <span class="k">del</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span>  <span class="c1"># strip out self from the args</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">presets</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>  <span class="c1"># presets first</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">presets</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">class_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">class_args</span><span class="p">:</span>  <span class="c1"># then class args</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">class_args</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">arg_store</span><span class="p">:</span>  <span class="c1"># finally arg store</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">arg_store</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">param</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>  <span class="c1"># positional arg</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s1">&#39;Component </span><span class="si">{}</span><span class="s1"> requires --</span><span class="si">{}</span><span class="s1"> argument.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># keyword argument</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span></div>
+
+
+<div class="viewcode-block" id="get_splitter"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_splitter">[docs]</a><span class="k">def</span> <span class="nf">get_splitter</span><span class="p">(</span><span class="n">arg_store</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+    <span class="n">presets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;channel&#39;</span><span class="p">:</span><span class="n">channel</span><span class="p">}</span>
+    <span class="n">splitter</span><span class="p">,</span> <span class="n">splitter_args</span> <span class="o">=</span> <span class="n">arg_store</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">][</span><span class="s1">&#39;splitter&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">get_class_args</span><span class="p">(</span><span class="n">splitter</span><span class="p">,</span> <span class="n">splitter_args</span><span class="p">,</span> <span class="n">arg_store</span><span class="p">,</span> <span class="n">presets</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">splitter</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_metrifier"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_metrifier">[docs]</a><span class="k">def</span> <span class="nf">get_metrifier</span><span class="p">(</span><span class="n">arg_store</span><span class="p">,</span> <span class="n">splitter</span><span class="p">):</span>
+    <span class="n">presets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;splitter&#39;</span><span class="p">:</span><span class="n">splitter</span><span class="p">}</span>
+    <span class="n">metrifier</span><span class="p">,</span> <span class="n">metrifier_args</span> <span class="o">=</span> <span class="n">arg_store</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">][</span><span class="s1">&#39;metrifier&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">get_class_args</span><span class="p">(</span><span class="n">metrifier</span><span class="p">,</span> <span class="n">metrifier_args</span><span class="p">,</span> <span class="n">arg_store</span><span class="p">,</span> <span class="n">presets</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">metrifier</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_classifier"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_classifier">[docs]</a><span class="k">def</span> <span class="nf">get_classifier</span><span class="p">(</span><span class="n">arg_store</span><span class="p">,</span> <span class="n">metrifier</span><span class="p">):</span>
+    <span class="n">presets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;metrifier&#39;</span><span class="p">:</span><span class="n">metrifier</span><span class="p">}</span>
+    <span class="n">classifier</span><span class="p">,</span> <span class="n">classifier_args</span> <span class="o">=</span> <span class="n">arg_store</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">][</span><span class="s1">&#39;classifier&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">get_class_args</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">classifier_args</span><span class="p">,</span> <span class="n">arg_store</span><span class="p">,</span> <span class="n">presets</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">classifier</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_second_stage"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_second_stage">[docs]</a><span class="k">def</span> <span class="nf">get_second_stage</span><span class="p">(</span><span class="n">arg_store</span><span class="p">,</span> <span class="n">splitter</span><span class="p">,</span> <span class="n">classifier</span><span class="p">):</span>
+    <span class="n">presets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;splitter&#39;</span><span class="p">:</span><span class="n">splitter</span><span class="p">,</span> <span class="s1">&#39;classifier&#39;</span><span class="p">:</span><span class="n">classifier</span><span class="p">}</span>
+    <span class="n">second_stage</span><span class="p">,</span> <span class="n">second_stage_args</span> <span class="o">=</span> <span class="n">arg_store</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">][</span><span class="s1">&#39;second_stage&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">get_class_args</span><span class="p">(</span><span class="n">second_stage</span><span class="p">,</span> <span class="n">second_stage_args</span><span class="p">,</span> <span class="n">arg_store</span><span class="p">,</span> <span class="n">presets</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">second_stage</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_accumulators"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_accumulators">[docs]</a><span class="k">def</span> <span class="nf">get_accumulators</span><span class="p">(</span><span class="n">arg_store</span><span class="p">):</span>
+    <span class="n">presets</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">accumulators</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">accumulator</span><span class="p">,</span> <span class="n">accumulator_args</span> <span class="ow">in</span> <span class="n">arg_store</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">][</span><span class="s1">&#39;accumulator&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">get_class_args</span><span class="p">(</span><span class="n">accumulator</span><span class="p">,</span> <span class="n">accumulator_args</span><span class="p">,</span> <span class="n">arg_store</span><span class="p">,</span> <span class="n">presets</span><span class="p">)</span>
+        <span class="n">accumulators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accumulator</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">accumulators</span></div>
+
+
+<div class="viewcode-block" id="get_concluders"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_concluders">[docs]</a><span class="k">def</span> <span class="nf">get_concluders</span><span class="p">(</span><span class="n">arg_store</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+    <span class="n">presets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;channel&#39;</span><span class="p">:</span><span class="n">channel</span><span class="p">}</span>
+    <span class="n">concluders</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="s1">&#39;concluder&#39;</span> <span class="ow">in</span> <span class="n">arg_store</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">concluder</span><span class="p">,</span> <span class="n">concluder_args</span> <span class="ow">in</span> <span class="n">arg_store</span><span class="p">[</span><span class="s1">&#39;components&#39;</span><span class="p">][</span><span class="s1">&#39;concluder&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">get_class_args</span><span class="p">(</span><span class="n">concluder</span><span class="p">,</span> <span class="n">concluder_args</span><span class="p">,</span> <span class="n">arg_store</span><span class="p">,</span> <span class="n">presets</span><span class="p">)</span>
+            <span class="n">concluders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">concluder</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">concluders</span></div>
+
+
+<div class="viewcode-block" id="get_pipeline"><a class="viewcode-back" href="../../panga.html#panga.read_builder.get_pipeline">[docs]</a><span class="k">def</span> <span class="nf">get_pipeline</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+    <span class="n">splitter</span> <span class="o">=</span> <span class="n">get_splitter</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+    <span class="n">metrifier</span> <span class="o">=</span> <span class="n">get_metrifier</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">splitter</span><span class="p">)</span>
+    <span class="n">classifier</span> <span class="o">=</span> <span class="n">get_classifier</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">metrifier</span><span class="p">)</span>
+    <span class="n">second_stage</span> <span class="o">=</span> <span class="n">get_second_stage</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">splitter</span><span class="p">,</span> <span class="n">classifier</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">splitter</span><span class="p">,</span> <span class="n">metrifier</span><span class="p">,</span> <span class="n">classifier</span><span class="p">,</span> <span class="n">second_stage</span></div>
+
+
+<div class="viewcode-block" id="process_channel_queue"><a class="viewcode-back" href="../../panga.html#panga.read_builder.process_channel_queue">[docs]</a><span class="k">def</span> <span class="nf">process_channel_queue</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">queue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Process a channel putting results into a shared queue.</span>
+
+<span class="sd">    :param args: namespace of miscellaneous stuff, see entrypoint args.</span>
+<span class="sd">    :param channel: numeric channel identifier.</span>
+<span class="sd">    :param queue: shared queue.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">read_metrics</span> <span class="ow">in</span> <span class="n">process_channel</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="c1">#TODO: buffered puts? might decrease overheard</span>
+        <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">read_metrics</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="process_channel"><a class="viewcode-back" href="../../panga.html#panga.read_builder.process_channel">[docs]</a><span class="k">def</span> <span class="nf">process_channel</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Process a channel yielding metrics for reads</span>
+
+<span class="sd">    :param args: namespace of miscellaneous stuff, see entrypoint args.</span>
+<span class="sd">    :param channel: numeric channel identifier.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Processing channel </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">))</span>
+    <span class="c1"># Set up pipeline</span>
+    <span class="n">read_generator</span><span class="p">,</span> <span class="n">metric_calculator</span><span class="p">,</span> <span class="n">classifier</span><span class="p">,</span> <span class="n">second_stage</span> <span class="o">=</span> <span class="n">get_pipeline</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+    <span class="n">concluders</span> <span class="o">=</span> <span class="n">get_concluders</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+
+    <span class="c1"># Get read data - tee because we want the reads to run second stage</span>
+    <span class="n">reads_0</span><span class="p">,</span> <span class="n">reads_1</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">tee</span><span class="p">(</span><span class="n">read_generator</span><span class="o">.</span><span class="n">reads</span><span class="p">())</span>
+
+    <span class="c1"># Calculate metrics</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">metric_calculator</span><span class="o">.</span><span class="n">process_reads</span><span class="p">(</span><span class="n">reads_0</span><span class="p">)</span>
+
+    <span class="c1"># Classify - augments read metrics with &#39;class&#39;</span>
+    <span class="n">class_metrics</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">process_reads</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+
+    <span class="c1"># Run second stage analysis to manipulate reads and metrics</span>
+    <span class="n">final_reads</span><span class="p">,</span> <span class="n">final_metrics</span> <span class="o">=</span> <span class="n">second_stage</span><span class="o">.</span><span class="n">process_reads</span><span class="p">(</span><span class="n">reads_1</span><span class="p">,</span> <span class="n">class_metrics</span><span class="p">)</span>
+
+    <span class="c1"># Output</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">final_reads</span><span class="p">,</span> <span class="n">final_metrics</span><span class="p">)):</span>
+        <span class="c1"># run concluders before yielding metrics so anything they inject is</span>
+        <span class="c1"># printed in the summary</span>
+        <span class="k">for</span> <span class="n">concluder</span> <span class="ow">in</span> <span class="n">concluders</span><span class="p">:</span>
+            <span class="n">concluder</span><span class="o">.</span><span class="n">process_read</span><span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">read_metrics</span>
+
+    <span class="k">for</span> <span class="n">concluder</span> <span class="ow">in</span> <span class="n">concluders</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Running </span><span class="si">{}</span><span class="s1"> for channel </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">concluder</span><span class="p">,</span> <span class="n">channel</span><span class="p">))</span>
+        <span class="n">concluder</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="except_functor"><a class="viewcode-back" href="../../panga.html#panga.read_builder.except_functor">[docs]</a><span class="k">def</span> <span class="nf">except_functor</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for worker functions, running under multiprocessing, to better</span>
+<span class="sd">    display tracebacks when the functions raise exceptions.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())))</span></div>
+
+
+<div class="viewcode-block" id="accumulate_channels"><a class="viewcode-back" href="../../panga.html#panga.read_builder.accumulate_channels">[docs]</a><span class="k">def</span> <span class="nf">accumulate_channels</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="c1">#TODO: drop this idiom into untangled</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;jobs&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Running with single-process iterator.&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">process_channel</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">item</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Running with </span><span class="si">{}</span><span class="s1">-process iterator.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;jobs&#39;</span><span class="p">]))</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;jobs&#39;</span><span class="p">])</span>
+        <span class="n">manager</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">promises</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+                <span class="n">except_functor</span><span class="p">,</span> <span class="n">process_channel_queue</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">queue</span><span class="p">)</span>
+            <span class="p">)</span> <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># check for any exceptions</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">promises</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+            <span class="c1"># try to get any item, but dont block. If nothing</span>
+            <span class="c1"># in queue, exit if all promises resolved.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ready</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">promises</span><span class="p">):</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">item</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../panga.html#panga.read_builder.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">&#39;[</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1">] </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datefmt</span><span class="o">=</span><span class="s1">&#39;%H:%M:%S&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="c1"># process args and get yaml string of all options</span>
+    <span class="n">args</span><span class="p">,</span> <span class="n">yaml_conf_out</span> <span class="o">=</span> <span class="n">process_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;args are: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Will stop after </span><span class="si">{}</span><span class="s2"> seconds of expt time.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;max_time&#39;</span><span class="p">]))</span>
+
+    <span class="c1"># Multiple components will write here</span>
+    <span class="k">if</span> <span class="s1">&#39;outpath&#39;</span> <span class="ow">in</span> <span class="n">args</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;outpath&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;outpath&#39;</span><span class="p">])</span>
+
+    <span class="c1"># save the config</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;config_out&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">add_prefix</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;config_out&#39;</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;prefix&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">&#39;outpath&#39;</span> <span class="ow">in</span> <span class="n">args</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;outpath&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;outpath&#39;</span><span class="p">],</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">yaml_conf_out</span><span class="p">)</span>
+
+    <span class="c1"># Get channel range from bulk if it was not specified</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">BulkFast5</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;fast5&#39;</span><span class="p">],</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f5</span><span class="p">:</span>
+            <span class="n">args</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">f5</span><span class="o">.</span><span class="n">channels</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">args</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Test pipeline can be constructed</span>
+    <span class="n">read_generator</span><span class="p">,</span> <span class="n">metric_calculator</span><span class="p">,</span> <span class="n">classifier</span><span class="p">,</span> <span class="n">second_stage</span> <span class="o">=</span> <span class="n">get_pipeline</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Splitter      : </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">read_generator</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Metrifier     : </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">metric_calculator</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Classifier    : </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">classifier</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;SecondStage   : </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">second_stage</span><span class="p">))</span>
+
+    <span class="c1"># Accumulators gather results from individual channels</span>
+    <span class="n">accumulators</span> <span class="o">=</span> <span class="n">get_accumulators</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Accumulators  : </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accumulators</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">read_metrics</span> <span class="ow">in</span> <span class="n">accumulate_channels</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">accumulator</span> <span class="ow">in</span> <span class="n">accumulators</span><span class="p">:</span>
+            <span class="n">accumulator</span><span class="o">.</span><span class="n">process_read</span><span class="p">(</span><span class="n">read_metrics</span><span class="p">)</span>
+
+    <span class="c1"># Finish up accumulators</span>
+    <span class="k">for</span> <span class="n">accumulator</span> <span class="ow">in</span> <span class="n">accumulators</span><span class="p">:</span>
+        <span class="n">accumulator</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

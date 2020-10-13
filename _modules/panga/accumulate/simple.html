@@ -1,0 +1,497 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.accumulate.simple &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../panga.html">panga package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>panga.accumulate.simple</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for panga.accumulate.simple</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">panga.accumulate.base</span> <span class="kn">import</span> <span class="n">AccumulateBase</span>
+<span class="kn">from</span> <span class="nn">panga.util</span> <span class="kn">import</span> <span class="n">add_prefix</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;MetricSummary&#39;</span><span class="p">,</span> <span class="s1">&#39;CountClasses&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassicMetricSummary&#39;</span><span class="p">,</span> <span class="s1">&#39;FilteredMetricSummary&#39;</span><span class="p">,</span> <span class="s1">&#39;ChannelReport&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MetricSummary"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.simple.MetricSummary">[docs]</a><span class="k">class</span> <span class="nc">MetricSummary</span><span class="p">(</span><span class="n">AccumulateBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">summary_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Accumulate read metrics into a file of tab-separated values.</span>
+
+<span class="sd">        :param outpath: output path for file.</span>
+<span class="sd">        :param summary_file: filename for output, if `None` output is written</span>
+<span class="sd">            to stdout.</span>
+<span class="sd">        :param class_filter: restrict to accumulating defined classes of read.</span>
+<span class="sd">        :param prefix: run identifier to include in summary file.</span>
+<span class="sd">        :param meta: dict of meta data to output for each read.</span>
+<span class="sd">                     keys are column names, values the value to output for each row.</span>
+
+<span class="sd">        ..note:: if the output file pre-exists an attempt is made to append</span>
+<span class="sd">            data to it (without writing a new header). The obviously cannot be</span>
+<span class="sd">            achieved when output is to stdout.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MetricSummary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">class_filter</span><span class="o">=</span><span class="n">class_filter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outpath</span> <span class="o">=</span> <span class="n">outpath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">summary_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">meta</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_open</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># convert True/False to 1/0</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">row</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="p">(</span><span class="n">read_metrics</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">row</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">values</span><span class="p">()))])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Ensure the internal filehandle is open</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">),</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fh</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+
+    <span class="k">def</span> <span class="nf">_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Close the internal filehandle</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ClassicMetricSummary"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.simple.ClassicMetricSummary">[docs]</a><span class="k">class</span> <span class="nc">ClassicMetricSummary</span><span class="p">(</span><span class="n">AccumulateBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">summary_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ClassicMetricSummary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">class_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># process all read classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_summary</span> <span class="o">=</span> <span class="n">MetricSummary</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">summary_file</span><span class="o">=</span><span class="n">summary_file</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+        <span class="n">fname</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">summary_file</span><span class="p">)</span>
+        <span class="n">strand_summary_fname</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_strand</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strand_summary</span> <span class="o">=</span> <span class="n">MetricSummary</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">summary_file</span><span class="o">=</span><span class="n">strand_summary_fname</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s1">&#39;strand&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_summary</span><span class="o">.</span><span class="n">process_read</span><span class="p">(</span><span class="n">read_metrics</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strand_summary</span><span class="o">.</span><span class="n">process_read</span><span class="p">(</span><span class="n">read_metrics</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FilteredMetricSummary"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.simple.FilteredMetricSummary">[docs]</a><span class="k">class</span> <span class="nc">FilteredMetricSummary</span><span class="p">(</span><span class="n">MetricSummary</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filtered_summary</span><span class="o">=</span><span class="s1">&#39;read_summary_filtered.txt&#39;</span><span class="p">,</span>
+                 <span class="n">filter_classes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;strand&#39;</span><span class="p">,</span> <span class="s1">&#39;pore&#39;</span><span class="p">,</span> <span class="s1">&#39;adapter&#39;</span><span class="p">),</span>
+                 <span class="n">filter_counts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_durations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">filter_sum_duration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_ch_mux</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a summary containing  only filtered_classes reads.</span>
+<span class="sd">        :param outpath: output path for file.</span>
+<span class="sd">        :param filtered_summary: str, filename for output.</span>
+<span class="sd">        :param filter_classes: tuple of read classes to include in summary.</span>
+<span class="sd">        :param filter_counts: dict specifying minimum number of reads per read</span>
+<span class="sd">               class below which the chan nel/mux combination will not app ear in the</span>
+<span class="sd">               filtered summary (e.g. {&#39;strand&#39;: 10} to exclude channels with &lt;10 strands.</span>
+<span class="sd">        :param filter_durations: dict specifying minimum summed duration of reads per</span>
+<span class="sd">               class below which the channel/mux combination will not app ear in the</span>
+<span class="sd">               filtered summary (e.g. {&#39;pore&#39;: 120} to exclude channels with &lt;120 seconds of pore time.</span>
+<span class="sd">        :param filter_sum_duration: int, sum of read durations below which a</span>
+<span class="sd">               channel/mux combination will not appear in the filtered summary.</span>
+<span class="sd">        :param prefix: run identifier to include in summary file.</span>
+<span class="sd">        :param meta: dict of meta data to output for each read.</span>
+<span class="sd">                     keys are column names, values the value to output for each row.</span>
+<span class="sd">        :param filter_ch_mux: bool, whether to remove channel-mux combinations</span>
+<span class="sd">               which ever were is_saturated, is_multiple or had class=&#39;multiple&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_ch_mux</span> <span class="o">=</span> <span class="n">filter_ch_mux</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_classes</span> <span class="o">=</span> <span class="n">filter_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_counts</span> <span class="o">=</span> <span class="n">filter_counts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_durations</span> <span class="o">=</span> <span class="n">filter_durations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_sum_duration</span> <span class="o">=</span> <span class="n">filter_sum_duration</span>
+
+        <span class="n">class_filter</span> <span class="o">=</span> <span class="n">filter_classes</span>
+        <span class="k">if</span> <span class="n">filter_classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_ch_mux</span> <span class="ow">or</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">min_sum_duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_counts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_counts</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">filter_classes</span><span class="p">))</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_durations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_durations</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">filter_classes</span><span class="p">))):</span>
+                <span class="c1"># we will have to process all reads</span>
+                    <span class="n">class_filter</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># store count per channel per mux per read class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_durations</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">float</span><span class="p">)))</span>
+        <span class="c1"># store count per channel per mux per read class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_counts</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span>
+
+        <span class="c1"># store record of bad channels dict with keys [channel][mux]</span>
+        <span class="c1"># (assumes a channel is good in the absense of saturation/multiple</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">electrically_fails</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">bool</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nreads</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">FilteredMetricSummary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span>
+                                                    <span class="n">summary_file</span><span class="o">=</span><span class="n">filtered_summary</span><span class="p">,</span>
+                                                    <span class="n">class_filter</span><span class="o">=</span><span class="n">class_filter</span><span class="p">,</span>
+                                                    <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">):</span>
+
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">]</span>
+        <span class="n">mux</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">]</span>
+        <span class="n">klass</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_counts</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">][</span><span class="n">klass</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_durations</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">][</span><span class="n">klass</span><span class="p">]</span> <span class="o">+=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_ch_mux</span> <span class="ow">and</span> <span class="p">(</span><span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;is_saturated&#39;</span><span class="p">]</span>
+                                   <span class="ow">or</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;is_multiple&#39;</span><span class="p">]</span>
+                                   <span class="ow">or</span> <span class="n">klass</span> <span class="o">==</span> <span class="s1">&#39;multiple&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">electrically_fails</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># skip reads we already know come from bad channel mux combinations</span>
+        <span class="c1"># and apply our class filters</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">electrically_fails</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span>
+             <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_classes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_classes</span><span class="p">)</span>
+            <span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">FilteredMetricSummary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_process_read</span><span class="p">(</span><span class="n">read_metrics</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nreads</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="FilteredMetricSummary.finalize"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.simple.FilteredMetricSummary.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If required, filter out reads from ch/mux combinations which were multiple/saturated at any point,</span>
+<span class="sd">        or had less than the minimum count of each read class in self.min_counts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1"># store record of which muxes we want to output</span>
+        <span class="c1"># will the be product of all filters</span>
+        <span class="n">get_true</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keep_ch_mux</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="n">get_true</span><span class="p">))</span>
+        <span class="n">dont_need_to_filter</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">for</span> <span class="n">ch</span><span class="p">,</span> <span class="n">ch_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_durations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">mux</span><span class="p">,</span> <span class="n">mux_durations</span> <span class="ow">in</span> <span class="n">ch_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">keep</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_ch_mux</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">electrically_fails</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]:</span>
+                    <span class="n">keep</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="c1">#print &#39;Turning off ch {} mux {} due to electrical failure&#39;.format(ch, mux)</span>
+                <span class="c1"># set self.working_pore True for each chan/mux with more than the</span>
+                <span class="c1"># specified summed duration per read class, so these chan/muxes do get outputed</span>
+                <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_durations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_durations</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">mux_durations</span><span class="p">[</span><span class="n">klass</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_durations</span><span class="p">[</span><span class="n">klass</span><span class="p">]:</span>
+                            <span class="n">keep</span> <span class="o">=</span> <span class="kc">False</span>
+                            <span class="c1">#print &#39;Turning off ch {} mux {} due to min_durations&#39;.format(ch, mux)</span>
+                <span class="c1"># set self.working_pore True for each chan/mux with more than the</span>
+                <span class="c1"># specified number of reads, so these chan/muxes do get outputed</span>
+                <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_counts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">mux_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_counts</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_counts</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">mux_counts</span><span class="p">[</span><span class="n">klass</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_counts</span><span class="p">[</span><span class="n">klass</span><span class="p">]:</span>
+                            <span class="n">keep</span> <span class="o">=</span> <span class="kc">False</span>
+                            <span class="c1">#print &#39;Turning off ch {} mux {} due to min_counts&#39;.format(ch, mux)</span>
+                <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_sum_duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mux_durations</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_sum_duration</span><span class="p">:</span>
+                        <span class="n">keep</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="c1">#print &#39;Turning off ch {} mux {} due to min_sum_durations&#39;.format(ch, mux)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">keep_ch_mux</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span> <span class="o">=</span> <span class="n">keep</span>
+                <span class="n">dont_need_to_filter</span> <span class="o">*=</span> <span class="n">keep</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nreads</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">dont_need_to_filter</span><span class="p">:</span>
+
+            <span class="c1"># loop over summary file and write out reads we want to keep to a temporary file, before overwriting</span>
+            <span class="c1"># the summary file with the tmp file. Avoid loading entire summary into memory, they can be several GB.</span>
+            <span class="n">source_fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">source_fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">expected_cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">expected_cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expected_cols</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">expected_cols</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;The filtered summary file has changed since it was written. Expected </span><span class="si">{}</span><span class="s1">, found </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">expected_cols</span><span class="p">,</span> <span class="n">cols</span><span class="p">))</span>
+            <span class="n">ch_col</span> <span class="o">=</span> <span class="n">cols</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;channel&#39;</span><span class="p">)</span>
+            <span class="n">mux_col</span> <span class="o">=</span> <span class="n">cols</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;mux&#39;</span><span class="p">)</span>
+            <span class="n">tmp_f</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;tmp&#39;</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">tmp_fname</span> <span class="o">=</span> <span class="n">tmp_f</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">tmp_f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># if we were not to use this, the file would be only accessible by the user who created it</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmp_fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp_fh</span><span class="p">:</span>
+                <span class="n">tmp_fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">source_fh</span><span class="p">:</span>
+                    <span class="n">split_line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">ch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split_line</span><span class="p">[</span><span class="n">ch_col</span><span class="p">])</span>
+                    <span class="n">mux</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split_line</span><span class="p">[</span><span class="n">mux_col</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_ch_mux</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]:</span>
+                        <span class="n">tmp_fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">source_fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">tmp_fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fh</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CountClasses"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.simple.CountClasses">[docs]</a><span class="k">class</span> <span class="nc">CountClasses</span><span class="p">(</span><span class="n">AccumulateBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Accumulate read metrics by counting the classes of observed reads.</span>
+<span class="sd">        On finalizing, prints counter to stdout.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CountClasses</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="p">[</span><span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="CountClasses.finalize"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.simple.CountClasses.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">counter</span></div></div>
+
+
+<div class="viewcode-block" id="ChannelReport"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.simple.ChannelReport">[docs]</a><span class="k">class</span> <span class="nc">ChannelReport</span><span class="p">(</span><span class="n">AccumulateBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">channel_report</span><span class="o">=</span><span class="s1">&#39;channel_report.txt&#39;</span><span class="p">,</span>
+                 <span class="n">report_class</span><span class="o">=</span><span class="s1">&#39;saturated&#39;</span><span class="p">,</span> <span class="n">end_of_read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Report for each channel/mux whether the channel contains a report_class read and when the first such read occured.</span>
+<span class="sd">        :param outpath: output path for file.</span>
+<span class="sd">        :param channel_report: str, filename for output.</span>
+<span class="sd">        :param report_class: str, class of reads to report on.</span>
+<span class="sd">        :param end_of_read: bool, if true, report the end time of the first matching read, else report the start.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ChannelReport</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">class_filter</span><span class="o">=</span><span class="n">report_class</span><span class="p">)</span>  <span class="c1"># only process report_class reads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outpath</span> <span class="o">=</span> <span class="n">outpath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">channel_report</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_class</span> <span class="o">=</span> <span class="n">report_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_of_read</span> <span class="o">=</span> <span class="n">end_of_read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+
+        <span class="c1"># store whether a channel contains the report_class class per channel per mux</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_read_class</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">bool</span><span class="p">))</span>
+        <span class="c1"># store time when the first report_class read occured</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_time</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">):</span>
+
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">]</span>
+        <span class="n">mux</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">]</span>
+        <span class="n">klass</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span>
+
+        <span class="c1"># only do something if this is the first time we have seen a</span>
+        <span class="c1"># report_class read</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_read_class</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">has_read_class</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">first_time</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_of_read</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">first_time</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span> <span class="o">+=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ChannelReport.finalize"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.simple.ChannelReport.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the channel report.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outpath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;channel&#39;</span><span class="p">,</span> <span class="s1">&#39;mux&#39;</span><span class="p">,</span> <span class="s1">&#39;first_</span><span class="si">{}</span><span class="s1">_time&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">report_class</span><span class="p">)])</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">ch</span><span class="p">,</span> <span class="n">muxes</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_read_class</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">mux</span> <span class="ow">in</span> <span class="n">muxes</span><span class="p">:</span>
+                    <span class="n">row</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="p">[</span><span class="n">ch</span><span class="p">,</span> <span class="n">mux</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_time</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]]))</span>
+                    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">))</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

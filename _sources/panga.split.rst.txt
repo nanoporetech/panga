@@ -1,0 +1,30 @@
+panga.split package
+===================
+
+Submodules
+----------
+
+panga.split.base module
+-----------------------
+
+.. automodule:: panga.split.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.split.simple module
+-------------------------
+
+.. automodule:: panga.split.simple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: panga.split
+    :members:
+    :undoc-members:
+    :show-inheritance:

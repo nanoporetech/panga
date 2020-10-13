@@ -1,0 +1,38 @@
+panga.metric package
+====================
+
+Submodules
+----------
+
+panga.metric.base module
+------------------------
+
+.. automodule:: panga.metric.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.metric.metrics module
+---------------------------
+
+.. automodule:: panga.metric.metrics
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.metric.simple module
+--------------------------
+
+.. automodule:: panga.metric.simple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: panga.metric
+    :members:
+    :undoc-members:
+    :show-inheritance:

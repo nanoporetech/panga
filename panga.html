@@ -1,0 +1,680 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga package &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="panga.accumulate package" href="panga.accumulate.html" />
+    <link rel="prev" title="Welcome to Panga’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">panga package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="panga.accumulate.html">panga.accumulate package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.algorithm.html">panga.algorithm package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.classify.html">panga.classify package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.conclude.html">panga.conclude package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.data.html">panga.data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.metric.html">panga.metric package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.split.html">panga.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.stage.html">panga.stage package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-panga.cmdargs">panga.cmdargs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-panga.fileio">panga.fileio module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-panga.iterators">panga.iterators module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-panga.read_builder">panga.read_builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-panga.util">panga.util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-panga">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>panga package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/panga.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="panga-package">
+<h1>panga package<a class="headerlink" href="#panga-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="panga.accumulate.html">panga.accumulate package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.accumulate.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.accumulate.html#module-panga.accumulate.base">panga.accumulate.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.accumulate.html#module-panga.accumulate.blocking_report">panga.accumulate.blocking_report module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.accumulate.html#module-panga.accumulate.simple">panga.accumulate.simple module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.accumulate.html#module-panga.accumulate.visualize">panga.accumulate.visualize module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.accumulate.html#module-panga.accumulate">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="panga.algorithm.html">panga.algorithm package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.algorithm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.algorithm.html#module-panga.algorithm.deltasplit">panga.algorithm.deltasplit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.algorithm.html#module-panga.algorithm.read_bounds_from_delta">panga.algorithm.read_bounds_from_delta module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.algorithm.html#module-panga.algorithm">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="panga.classify.html">panga.classify package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.classify.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.classify.html#module-panga.classify.base">panga.classify.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.classify.html#module-panga.classify.read_rules">panga.classify.read_rules module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.classify.html#module-panga.classify.simple">panga.classify.simple module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.classify.html#module-panga.classify">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="panga.conclude.html">panga.conclude package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.conclude.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.conclude.html#module-panga.conclude.base">panga.conclude.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.conclude.html#module-panga.conclude.simple">panga.conclude.simple module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.conclude.html#module-panga.conclude">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="panga.data.html">panga.data package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.data.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="panga.data.config.html">panga.data.config package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="panga.data.config.html#module-panga.data.config">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="panga.data.html#module-panga.data">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="panga.metric.html">panga.metric package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.metric.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.metric.html#module-panga.metric.base">panga.metric.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.metric.html#module-panga.metric.metrics">panga.metric.metrics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.metric.html#module-panga.metric.simple">panga.metric.simple module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.metric.html#module-panga.metric">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="panga.split.html">panga.split package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.split.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.split.html#module-panga.split.base">panga.split.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.split.html#module-panga.split.simple">panga.split.simple module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.split.html#module-panga.split">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="panga.stage.html">panga.stage package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.stage.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.stage.html#module-panga.stage.base">panga.stage.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.stage.html#module-panga.stage.blocking">panga.stage.blocking module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.stage.html#module-panga.stage.simple">panga.stage.simple module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.stage.html#module-panga.stage">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-panga.cmdargs">
+<span id="panga-cmdargs-module"></span><h2>panga.cmdargs module<a class="headerlink" href="#module-panga.cmdargs" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.cmdargs.ExpandRanges">
+<em class="property">class </em><code class="descclassname">panga.cmdargs.</code><code class="descname">ExpandRanges</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/cmdargs.html#ExpandRanges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.cmdargs.ExpandRanges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">argparse.Action</span></code></p>
+<p>Translate a str like 1,2,3-5,40 to [1,2,3,4,5,40]</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.cmdargs.FileExists">
+<em class="property">class </em><code class="descclassname">panga.cmdargs.</code><code class="descname">FileExists</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/cmdargs.html#FileExists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.cmdargs.FileExists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">argparse.Action</span></code></p>
+<p>Check if the input file exist.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.fileio">
+<span id="panga-fileio-module"></span><h2>panga.fileio module<a class="headerlink" href="#module-panga.fileio" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="panga.fileio.file_has_fields">
+<code class="descclassname">panga.fileio.</code><code class="descname">file_has_fields</code><span class="sig-paren">(</span><em>fname</em>, <em>fields=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/fileio.html#file_has_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.fileio.file_has_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that a tsv file has given fields</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fname</strong> – filename to read. If the filename extension is
+gz or bz2, the file is first decompressed.</li>
+<li><strong>fields</strong> – list of required fields.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">boolean</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.fileio.read_chunks">
+<code class="descclassname">panga.fileio.</code><code class="descname">read_chunks</code><span class="sig-paren">(</span><em>fname</em>, <em>n_lines</em>, <em>n_chunks=None</em>, <em>header=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/fileio.html#read_chunks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.fileio.read_chunks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield successive chunks of a file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fname</strong> – file to read</li>
+<li><strong>n_lines</strong> – number of lines per chunk</li>
+<li><strong>n_chunks</strong> – number of chunks to read</li>
+<li><strong>header</strong> – if True one line is added to first chunk</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.fileio.readchunkedtsv">
+<code class="descclassname">panga.fileio.</code><code class="descname">readchunkedtsv</code><span class="sig-paren">(</span><em>fname</em>, <em>chunk_size=100</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/fileio.html#readchunkedtsv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.fileio.readchunkedtsv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read chunks of a .tsv file at a time.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fname</strong> – file to read</li>
+<li><strong>chunk_size</strong> – length of resultant chunks</li>
+<li><strong>**kwargs</strong> – <p>kwargs of np.genfromtxt</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.fileio.readtsv">
+<code class="descclassname">panga.fileio.</code><code class="descname">readtsv</code><span class="sig-paren">(</span><em>fname</em>, <em>fields=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/fileio.html#readtsv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.fileio.readtsv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a tsv file into a numpy array with required field checking</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fname</strong> – filename to read. If the filename extension is
+gz or bz2, the file is first decompressed.</li>
+<li><strong>fields</strong> – list of required fields.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.fileio.take_a_peak">
+<code class="descclassname">panga.fileio.</code><code class="descname">take_a_peak</code><span class="sig-paren">(</span><em>fname</em>, <em>n_lines=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/fileio.html#take_a_peak"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.fileio.take_a_peak" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the head of a file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fname</strong> – file to read</li>
+<li><strong>n_lines</strong> – number of lines to read</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.iterators">
+<span id="panga-iterators-module"></span><h2>panga.iterators module<a class="headerlink" href="#module-panga.iterators" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="panga.iterators.blocker">
+<code class="descclassname">panga.iterators.</code><code class="descname">blocker</code><span class="sig-paren">(</span><em>iterable</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/iterators.html#blocker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.iterators.blocker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield successive n-sized blocks from iterable
+as numpy array. Doesn’t pad final block.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.iterators.empty_iterator">
+<code class="descclassname">panga.iterators.</code><code class="descname">empty_iterator</code><span class="sig-paren">(</span><em>it</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/iterators.html#empty_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.iterators.empty_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an iterator is empty and prepare a fresh one for use</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>it</strong> – iterator to test</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">bool, iterator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.iterators.window">
+<code class="descclassname">panga.iterators.</code><code class="descname">window</code><span class="sig-paren">(</span><em>iterable</em>, <em>size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/iterators.html#window"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.iterators.window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an iterator returning a sliding window from another iterator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>iterable</strong> – Iterator</li>
+<li><strong>size</strong> – Size of window</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">an iterator returning a tuple containing the data in the window</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.read_builder">
+<span id="panga-read-builder-module"></span><h2>panga.read_builder module<a class="headerlink" href="#module-panga.read_builder" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.read_builder.MoreHelpAction">
+<em class="property">class </em><code class="descclassname">panga.read_builder.</code><code class="descname">MoreHelpAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#MoreHelpAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.MoreHelpAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">argparse.Action</span></code></p>
+<p>Parse JSON str of a list of lists into a tuple of tuples.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.read_builder.ParseJsonDictAction">
+<em class="property">class </em><code class="descclassname">panga.read_builder.</code><code class="descname">ParseJsonDictAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#ParseJsonDictAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.ParseJsonDictAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">argparse.Action</span></code></p>
+<p>Parse JSON str into a dict.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.read_builder.SetReadRulesAction">
+<em class="property">class </em><code class="descclassname">panga.read_builder.</code><code class="descname">SetReadRulesAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#SetReadRulesAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.SetReadRulesAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">argparse.Action</span></code></p>
+<p>Set classifier component when read rule config is given.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.accumulate_channels">
+<code class="descclassname">panga.read_builder.</code><code class="descname">accumulate_channels</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#accumulate_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.accumulate_channels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.except_functor">
+<code class="descclassname">panga.read_builder.</code><code class="descname">except_functor</code><span class="sig-paren">(</span><em>function</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#except_functor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.except_functor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for worker functions, running under multiprocessing, to better
+display tracebacks when the functions raise exceptions.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_accumulators">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_accumulators</code><span class="sig-paren">(</span><em>arg_store</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_accumulators"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_accumulators" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_argparser">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_argparser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_argparser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_argparser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_class_arg_store">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_class_arg_store</code><span class="sig-paren">(</span><em>arg_store</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_class_arg_store"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_class_arg_store" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_class_args">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_class_args</code><span class="sig-paren">(</span><em>cls</em>, <em>class_args</em>, <em>arg_store</em>, <em>presets={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_class_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_class_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve the arguments to be used for a component.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cls</strong> – the component class</li>
+<li><strong>cls_args</strong> – dict of arguments specific to this class, will be used in
+preference to args in <cite>arg_store</cite>. If None, will be ignored.</li>
+<li><strong>arg_store</strong> – namespace containing all possible arguments</li>
+<li><strong>preset</strong> – preset argument values, may correspond to postional or
+keyword arguments. Will be used in preference to any others..</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_classifier">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_classifier</code><span class="sig-paren">(</span><em>arg_store</em>, <em>metrifier</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_classifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_classifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_concluders">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_concluders</code><span class="sig-paren">(</span><em>arg_store</em>, <em>channel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_concluders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_concluders" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_metrifier">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_metrifier</code><span class="sig-paren">(</span><em>arg_store</em>, <em>splitter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_metrifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_metrifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_pipeline">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_pipeline</code><span class="sig-paren">(</span><em>args</em>, <em>channel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_pipeline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_second_stage">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_second_stage</code><span class="sig-paren">(</span><em>arg_store</em>, <em>splitter</em>, <em>classifier</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_second_stage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_second_stage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.get_splitter">
+<code class="descclassname">panga.read_builder.</code><code class="descname">get_splitter</code><span class="sig-paren">(</span><em>arg_store</em>, <em>channel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#get_splitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.get_splitter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.load_yaml_config">
+<code class="descclassname">panga.read_builder.</code><code class="descname">load_yaml_config</code><span class="sig-paren">(</span><em>yaml_conf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#load_yaml_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.load_yaml_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.main">
+<code class="descclassname">panga.read_builder.</code><code class="descname">main</code><span class="sig-paren">(</span><em>args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.make_resolver">
+<code class="descclassname">panga.read_builder.</code><code class="descname">make_resolver</code><span class="sig-paren">(</span><em>my_component</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#make_resolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.make_resolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and argparse.action to set a component class.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.process_args">
+<code class="descclassname">panga.read_builder.</code><code class="descname">process_args</code><span class="sig-paren">(</span><em>arguments=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#process_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.process_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read and do an initial manipulation of inputs into a dict.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>arguments</strong> – list of arguments</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dict, argstore of options organised by component class.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">str,  all options as yaml str.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.process_channel">
+<code class="descclassname">panga.read_builder.</code><code class="descname">process_channel</code><span class="sig-paren">(</span><em>args</em>, <em>channel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#process_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.process_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a channel yielding metrics for reads</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>args</strong> – namespace of miscellaneous stuff, see entrypoint args.</li>
+<li><strong>channel</strong> – numeric channel identifier.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.process_channel_queue">
+<code class="descclassname">panga.read_builder.</code><code class="descname">process_channel_queue</code><span class="sig-paren">(</span><em>args</em>, <em>channel</em>, <em>queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#process_channel_queue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.process_channel_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a channel putting results into a shared queue.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>args</strong> – namespace of miscellaneous stuff, see entrypoint args.</li>
+<li><strong>channel</strong> – numeric channel identifier.</li>
+<li><strong>queue</strong> – shared queue.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.read_builder.resolve_rules_config">
+<code class="descclassname">panga.read_builder.</code><code class="descname">resolve_rules_config</code><span class="sig-paren">(</span><em>config_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/read_builder.html#resolve_rules_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.read_builder.resolve_rules_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a ReadRules rules arg points to a file, load the rules from that file</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.util">
+<span id="panga-util-module"></span><h2>panga.util module<a class="headerlink" href="#module-panga.util" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="panga.util.add_prefix">
+<code class="descclassname">panga.util.</code><code class="descname">add_prefix</code><span class="sig-paren">(</span><em>filename</em>, <em>prefix=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/util.html#add_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.util.add_prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.util.ensure_dir_exists">
+<code class="descclassname">panga.util.</code><code class="descname">ensure_dir_exists</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/util.html#ensure_dir_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.util.ensure_dir_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure a directory exists, create if necessary.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.util.print_config_dir">
+<code class="descclassname">panga.util.</code><code class="descname">print_config_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/util.html#print_config_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.util.print_config_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get directory of panga configs using pkg_resources</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-panga" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="panga.accumulate.html" class="btn btn-neutral float-right" title="panga.accumulate package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Panga’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

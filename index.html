@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to Panga’s documentation! &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="panga package" href="panga.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="panga.html">panga package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Welcome to Panga’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-panga-s-documentation">
+<h1>Welcome to Panga’s documentation!<a class="headerlink" href="#welcome-to-panga-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="read-builder">
+<h2>Read Builder<a class="headerlink" href="#read-builder" title="Permalink to this headline">¶</a></h2>
+<p>A somewhat generic system for classifying the channel state throughout the
+course of an experiment.</p>
+<p>Here, a <em>read</em> is a contiguous run of events/raw data points that correspond to an
+identifiable channel state.</p>
+<p>We follow the same three-step process used in previous implementations, but allow
+for some useful additions.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><strong>Determine read boundaries:</strong> Calculates start and end coordinates of
+reads, and outputs reads as raw or event data. Naively, neighbouring reads
+are ultimately expected to be assigned different classes.</li>
+<li><strong>Calculate metrics on reads:</strong> Takes event (or raw) data provided by
+step 1. and calculates summary statistics (of arbitrary complexity). May
+optionally take exogenous data concerning the state of a channel, e.g.
+saturation status.</li>
+<li><strong>Classify reads:</strong> Takes the matrix of metrics for a read (and possibly the
+metrics of surrounding reads) to output an additional <em>metric</em>: the
+classification.</li>
+</ol>
+</div></blockquote>
+<p>The smart cookie notices that this system is rather <em>backwards</em>: one would hope
+to label read boundaries by running a classifier over a channel and outputting
+boundaries where there is a state change. The above does not exclude this;
+step 1. could be arbitrarily complex. The framework requires only that it
+output read data (and optionally key-value pairs of meta data).</p>
+<p>The key differences between the current framework and previous incarnations are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Clear separation of the three steps.</li>
+<li>The ability to calculate classes based on metrics of surrounding reads.</li>
+<li>Defined interface to each step such that the methodology used in each can
+be changed depending on the application.</li>
+<li>Low memory use: reads are processed individually rather than storing all
+data for a channel in memory.</li>
+<li>Multiprocessing across channels.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Panga installs into a virtual environment. Installation should should be as simple as running</dt>
+<dd>Make install</dd>
+<dt>On Ubuntu, you will need to install the virtualenv and python-dev packages.</dt>
+<dd>sudo apt-get install python-virtualenv python-dev</dd>
+</dl>
+</div>
+<div class="section" id="running-read-builder">
+<h2>Running read_builder<a class="headerlink" href="#running-read-builder" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Panga read_builder is installed into a virtual environment. To run it first activate your environment</dt>
+<dd>source panga_directory/venv/bin/activate</dd>
+<dt>To analyse Minknow reads use:</dt>
+<dd>read_builder –fast5 path_to_bulk_hdf –config $(panga_config_dir)/standard_minknow_classes.yml –outpath read_builder –summary_file read_summary.txt</dd>
+<dt>Example configs for more advanced analyses such as redetection of read boundaries, read metrics and classifications can be found in the panga config directory:</dt>
+<dd>ls $(panga_config_dir)</dd>
+</dl>
+</div>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="full-api-reference">
+<h2>Full API reference<a class="headerlink" href="#full-api-reference" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="panga.html">panga package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="panga.accumulate.html">panga.accumulate package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.algorithm.html">panga.algorithm package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.classify.html">panga.classify package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.conclude.html">panga.conclude package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.data.html">panga.data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.metric.html">panga.metric package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.split.html">panga.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.stage.html">panga.stage package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.cmdargs">panga.cmdargs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.fileio">panga.fileio module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.iterators">panga.iterators module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.read_builder">panga.read_builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.util">panga.util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="panga.html" class="btn btn-neutral float-right" title="panga package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

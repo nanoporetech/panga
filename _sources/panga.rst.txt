@@ -1,0 +1,68 @@
+panga package
+=============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    panga.accumulate
+    panga.algorithm
+    panga.classify
+    panga.conclude
+    panga.data
+    panga.metric
+    panga.split
+    panga.stage
+
+Submodules
+----------
+
+panga.cmdargs module
+--------------------
+
+.. automodule:: panga.cmdargs
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.fileio module
+-------------------
+
+.. automodule:: panga.fileio
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.iterators module
+----------------------
+
+.. automodule:: panga.iterators
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.read\_builder module
+--------------------------
+
+.. automodule:: panga.read_builder
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.util module
+-----------------
+
+.. automodule:: panga.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: panga
+    :members:
+    :undoc-members:
+    :show-inheritance:

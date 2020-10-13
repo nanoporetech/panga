@@ -1,0 +1,372 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.stage.blocking &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../panga.html">panga package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>panga.stage.blocking</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for panga.stage.blocking</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">fast5_research.fast5_bulk</span> <span class="kn">import</span> <span class="n">BulkFast5</span>
+
+<span class="kn">from</span> <span class="nn">panga.stage.base</span> <span class="kn">import</span> <span class="n">StageBase</span>
+<span class="kn">from</span> <span class="nn">panga.split.base</span> <span class="kn">import</span> <span class="n">Read</span>
+<span class="kn">from</span> <span class="nn">panga.split</span> <span class="kn">import</span> <span class="n">Fast5Split</span>
+<span class="kn">from</span> <span class="nn">panga.metric</span> <span class="kn">import</span> <span class="n">BlockingMetrics</span>
+<span class="kn">from</span> <span class="nn">panga.classify</span> <span class="kn">import</span> <span class="n">ReadRules</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;BlockingAnalysis&#39;</span><span class="p">,)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BlockingAnalysis"><a class="viewcode-back" href="../../../panga.stage.html#panga.stage.blocking.BlockingAnalysis">[docs]</a><span class="k">class</span> <span class="nc">BlockingAnalysis</span><span class="p">(</span><span class="n">StageBase</span><span class="p">):</span>
+
+    <span class="k">def</span>  <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">splitter</span><span class="p">,</span> <span class="n">classifier</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Join unproductive reads together and reanalyse&quot;&quot;&quot;</span>
+        <span class="c1"># provide a default config, and overwrite any of these options with</span>
+        <span class="c1"># options provided in second_stage_config (a yaml file).</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;with_events&#39;</span><span class="p">:</span>       <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;with_raw&#39;</span><span class="p">:</span>          <span class="kc">False</span><span class="p">,</span>
+                <span class="s1">&#39;with_states&#39;</span><span class="p">:</span>       <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;window_bounds&#39;</span><span class="p">:</span>     <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">900</span><span class="p">),</span>
+                <span class="s1">&#39;non_block_classes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pore&#39;</span><span class="p">,</span> <span class="s1">&#39;tba&#39;</span><span class="p">,</span> <span class="s1">&#39;strand&#39;</span><span class="p">,</span> <span class="s1">&#39;multiple&#39;</span><span class="p">,</span> <span class="s1">&#39;saturated&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;recovered_classes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;strand&#39;</span><span class="p">,</span> <span class="s1">&#39;pore&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;state_classes&#39;</span><span class="p">:</span>     <span class="p">(</span><span class="s1">&#39;strand&#39;</span><span class="p">,</span> <span class="s1">&#39;pore&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;to_inject&#39;</span><span class="p">:</span>         <span class="p">((</span><span class="s1">&#39;median_current&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;_before&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s1">&#39;median_current&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;_after&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s1">&#39;initial_classification&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;_before&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s1">&#39;initial_classification&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;_after&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">)</span>
+                                    <span class="p">),</span>
+                <span class="s1">&#39;time_since&#39;</span><span class="p">:</span>        <span class="p">(</span><span class="s1">&#39;unproductive&#39;</span><span class="p">,</span> <span class="s1">&#39;strand&#39;</span><span class="p">,</span> <span class="s1">&#39;pore&#39;</span><span class="p">,</span> <span class="s1">&#39;bermuda&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;rules&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;bermuda = (duration,gt,900) &amp; (median_current_1_to_3_s,gt,40) &amp; (median_current_1_to_3_s,lt,150) &amp; (median_current_500_to_900_s - median_current_1_to_3_s,gt,-90) &amp; (median_current_500_to_900_s - median_current_1_to_3_s,lt,-25)&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;unproductive = (initial_classification, eq, &quot;unproductive&quot;)&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;pore = (initial_classification, eq, &quot;pore&quot;)&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;strand = (initial_classification, eq, &quot;strand&quot;)&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;tba = (initial_classification, eq, &quot;tba&quot;)&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;adapter = (initial_classification, eq, &quot;adapter&quot;)&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;multiple = (initial_classification, eq, &quot;multiple&quot;)&#39;</span>
+                <span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conf</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">BlockingAnalysis</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">splitter</span><span class="p">,</span> <span class="n">classifier</span><span class="p">)</span>
+        <span class="c1"># get channel and fast5 from the splitter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span> <span class="o">=</span> <span class="n">BlockingJoin</span><span class="p">(</span><span class="n">splitter</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">fast5</span><span class="o">=</span><span class="n">splitter</span><span class="o">.</span><span class="n">fast5</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;with_events&#39;</span><span class="p">],</span>
+                                      <span class="n">with_raw</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;with_raw&#39;</span><span class="p">],</span> <span class="n">with_states</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;with_states&#39;</span><span class="p">],</span>
+                                      <span class="n">non_block_classes</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;non_block_classes&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrifier</span> <span class="o">=</span> <span class="n">BlockingMetrics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="p">,</span> <span class="n">window_bounds</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;window_bounds&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">ReadRules</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrifier</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;rules&#39;</span><span class="p">],</span>
+                                    <span class="n">to_inject</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;to_inject&#39;</span><span class="p">],</span> <span class="n">time_since</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;time_since&#39;</span><span class="p">],</span>
+                                    <span class="n">recovered_classes</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;recovered_classes&#39;</span><span class="p">],</span> <span class="n">state_classes</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;state_classes&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_reads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reads</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+        <span class="c1"># construct a new pipeline</span>
+        <span class="c1"># make a new generator of read objects</span>
+        <span class="c1"># tee because we want to yield reads and metrics</span>
+        <span class="n">joined_reads_0</span><span class="p">,</span> <span class="n">joined_reads_1</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">tee</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">_process_reads</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">metrics</span><span class="p">))</span>
+        <span class="c1"># make a new generator of blocking metrics</span>
+        <span class="n">block_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrifier</span><span class="o">.</span><span class="n">process_reads</span><span class="p">(</span><span class="n">joined_reads_0</span><span class="p">)</span>
+        <span class="c1"># make a new generator of classified metrics</span>
+        <span class="n">classed_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="o">.</span><span class="n">process_reads</span><span class="p">(</span><span class="n">block_metrics</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">joined_reads_1</span><span class="p">,</span> <span class="n">classed_metrics</span></div>
+
+
+<span class="k">class</span> <span class="nc">BlockingJoin</span><span class="p">(</span><span class="n">Fast5Split</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">fast5</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_states</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">non_block_classes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;pore&#39;</span><span class="p">,</span> <span class="s1">&#39;tba&#39;</span><span class="p">,</span> <span class="s1">&#39;strand&#39;</span><span class="p">,</span> <span class="s1">&#39;multiple&#39;</span><span class="p">,</span> <span class="s1">&#39;saturated&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;Join togther reads which don&#39;t belong to non_block_classes.</span>
+
+<span class="sd">        :param channel: channel for which to provide reads.</span>
+<span class="sd">        :param fast5: fast5 file, only needed if with_events, with_raw or with_states is True.</span>
+<span class="sd">        :param with_events: bool, whether to provide event data from the fast5</span>
+<span class="sd">        :param with_raw: bool, whether to provide raw data from the fast5.</span>
+<span class="sd">        :param with_states: if True, add channel state data (mux and channel states) from the fast5.</span>
+<span class="sd">        :param non_block_classes: iterable of str, classes not to join together into unproductive periods.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span> <span class="o">=</span> <span class="n">with_states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fast5</span> <span class="o">=</span> <span class="n">fast5</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">with_events</span> <span class="ow">or</span> <span class="n">with_raw</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fast5</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Raw, events or channel_states requested, but no fast5 provided&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BlockingJoin</span><span class="p">,</span> <span class="bp">self</span><span class="p">,)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fast5</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="n">with_events</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="n">with_raw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">non_block_classes</span> <span class="o">=</span> <span class="n">non_block_classes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;start_time&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;duration&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;channel&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mux&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;start_time&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;start_event&#39;</span><span class="p">,</span> <span class="s1">&#39;end_event&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mux&#39;</span><span class="p">,</span> <span class="s1">&#39;states&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">,</span> <span class="s1">&#39;mux_changes&#39;</span><span class="p">,</span> <span class="s1">&#39;mux_changes&#39;</span><span class="p">,</span> <span class="s1">&#39;bias_voltage_changes&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_classification&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_n_reads&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_read_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reads</span><span class="p">,</span> <span class="n">f5</span><span class="p">):</span>
+        <span class="n">read_meta</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reads</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span>
+        <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reads</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">reads</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">reads</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span>
+        <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;start_event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reads</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start_event&#39;</span><span class="p">]</span>
+        <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;end_event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reads</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;end_event&#39;</span><span class="p">]</span>
+        <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;initial_n_reads&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">reads</span><span class="p">)</span>
+        <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;initial_classification&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reads</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;class&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;initial_classification&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">non_block_classes</span><span class="p">:</span>
+            <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;initial_classification&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;unproductive&#39;</span>
+
+        <span class="n">read_events</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span><span class="p">:</span>
+            <span class="n">read_events</span> <span class="o">=</span> <span class="n">f5</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">event_indices</span><span class="o">=</span><span class="p">(</span><span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;start_event&#39;</span><span class="p">],</span> <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;end_event&#39;</span><span class="p">]))</span>
+            <span class="n">read_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_event_fields</span><span class="p">(</span><span class="n">read_events</span><span class="p">,</span> <span class="n">f5</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
+        <span class="n">read_raw</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span><span class="p">:</span>
+            <span class="n">read_raw</span> <span class="o">=</span> <span class="n">f5</span><span class="o">.</span><span class="n">get_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">],</span> <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]),</span> <span class="n">use_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">:</span>  <span class="c1"># add mux, channel states from fast5</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_channel_states</span><span class="p">(</span><span class="n">f5</span><span class="p">,</span> <span class="n">read_meta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Read</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="n">read_events</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">read_raw</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">read_meta</span><span class="p">,</span> <span class="n">channel_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_meta</span><span class="p">,</span>
+                           <span class="n">context_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">context_meta</span><span class="p">,</span> <span class="n">tracking_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_meta</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_process_reads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reads</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">:</span>
+            <span class="n">f5</span> <span class="o">=</span> <span class="n">BulkFast5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fast5</span><span class="p">)</span>
+            <span class="c1"># load channel, tracking and context meta so we don&#39;t need fast5</span>
+            <span class="c1"># later to e.g. write fast5 files.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_fast5_meta</span><span class="p">(</span><span class="n">f5</span><span class="p">)</span>
+
+        <span class="n">reads_queue</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">read</span><span class="p">,</span> <span class="n">meta</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+            <span class="c1"># TODO: at the moment we don&#39;t use the read objects as its simpler</span>
+            <span class="c1"># just to load what we want from the fast5 but we could imagine</span>
+            <span class="c1"># combining the events, raw, state_changes and mux_changes from</span>
+            <span class="c1"># individual reads into a new read object, so we don&#39;t need a fast5</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Read: channel </span><span class="si">{}</span><span class="s1"> mux </span><span class="si">{}</span><span class="s1"> time </span><span class="si">{}</span><span class="s1"> class </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]))</span>
+            <span class="c1"># if we have have accumulated any reads, yield them if the</span>
+            <span class="c1"># well_id has changed. Note that unblock_voltage_1 and</span>
+            <span class="c1"># common_voltage_1 both enumerate to 1, so this will not stop us</span>
+            <span class="c1"># joining up blocks interrupted by flicks.</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reads_queue</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">reads_queue</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;mux&#39;</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Detected change in mux, yielding existing reads&#39;</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_read_obj</span><span class="p">(</span><span class="n">reads_queue</span><span class="p">,</span> <span class="n">f5</span><span class="p">)</span>
+                <span class="n">reads_queue</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># prepare for next grouping of reads.</span>
+            <span class="c1"># if the new read is not a block, if we have accumulated reads,</span>
+            <span class="c1"># yield them, then yield this read</span>
+            <span class="k">if</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">non_block_classes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reads_queue</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;We have a non-block class, yielding existing reads&#39;</span><span class="p">)</span>
+                    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_read_obj</span><span class="p">(</span><span class="n">reads_queue</span><span class="p">,</span> <span class="n">f5</span><span class="p">)</span>
+                    <span class="n">reads_queue</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># prepare for next grouping of reads.</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;We have a non-block class, yielding single read&#39;</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_read_obj</span><span class="p">([</span><span class="n">meta</span><span class="p">],</span> <span class="n">f5</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># this is a block, so append to reads</span>
+                <span class="n">reads_queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reads_queue</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># if we reach the end of the run, yield the block</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_read_obj</span><span class="p">(</span><span class="n">reads_queue</span><span class="p">,</span> <span class="n">f5</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">:</span>
+            <span class="n">f5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

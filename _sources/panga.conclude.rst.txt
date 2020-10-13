@@ -1,0 +1,30 @@
+panga.conclude package
+======================
+
+Submodules
+----------
+
+panga.conclude.base module
+--------------------------
+
+.. automodule:: panga.conclude.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.conclude.simple module
+----------------------------
+
+.. automodule:: panga.conclude.simple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: panga.conclude
+    :members:
+    :undoc-members:
+    :show-inheritance:

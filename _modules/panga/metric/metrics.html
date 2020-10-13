@@ -1,0 +1,479 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.metric.metrics &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../panga.html">panga package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>panga.metric.metrics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for panga.metric.metrics</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">entropy</span> <span class="k">as</span> <span class="n">scipy_entropy</span>
+
+<span class="kn">from</span> <span class="nn">panga.iterators</span> <span class="kn">import</span> <span class="n">window</span>
+
+<span class="k">def</span> <span class="nf">_apply_to_field</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">function</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="apply_to_field"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.apply_to_field">[docs]</a><span class="k">def</span> <span class="nf">apply_to_field</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a function which applies a given function to an attribute of an</span>
+<span class="sd">    object.</span>
+
+<span class="sd">    :param function: function to apply, e.g. `np.mean`.</span>
+<span class="sd">    :param field: attribute of an object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">_apply_to_field</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="duration"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.duration">[docs]</a><span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate total duration of events array.</span>
+
+<span class="sd">    :param events: the events to process, should have `start` and</span>
+<span class="sd">        `length` fields.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">events</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">events</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;length&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="read_start_time"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.read_start_time">[docs]</a><span class="k">def</span> <span class="nf">read_start_time</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simply return the time of the first event.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="range_data"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.range_data">[docs]</a><span class="k">def</span> <span class="nf">range_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate a range measure for a field.&quot;&quot;&quot;</span>
+    <span class="n">centiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">centiles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">centiles</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="med_mad_data"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.med_mad_data">[docs]</a><span class="k">def</span> <span class="nf">med_mad_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the Median Absolute Deviation, i.e., the median</span>
+<span class="sd">    of the absolute deviations from the median, and the median</span>
+
+<span class="sd">    :param data: A :class:`ndarray` object</span>
+<span class="sd">    :param axis: For multidimensional arrays, which axis to calculate over</span>
+<span class="sd">    :returns: a tuple containing the median and MAD of the data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dmed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+    <span class="n">dmad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">dmed</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dmed</span><span class="p">,</span> <span class="n">dmad</span></div>
+
+
+<div class="viewcode-block" id="get_channel_attr"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.get_channel_attr">[docs]</a><span class="k">def</span> <span class="nf">get_channel_attr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve a pure channel attribute, not dependent on read meta. This</span>
+<span class="sd">    is only required as metric interface determines the interface.&quot;&quot;&quot;</span>
+    <span class="n">channel_meta</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">channel_meta</span><span class="p">[</span><span class="n">item</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_read_meta_attr"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.get_read_meta_attr">[docs]</a><span class="k">def</span> <span class="nf">get_read_meta_attr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">read_meta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve a pure read meta attribute, not dependent on channel meta. This</span>
+<span class="sd">    is only required as metric interface determines the interface.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">read_meta</span><span class="p">[</span><span class="n">item</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_channel_attr_at_read"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.get_channel_attr_at_read">[docs]</a><span class="k">def</span> <span class="nf">get_channel_attr_at_read</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">channel_meta</span><span class="p">,</span> <span class="n">read_meta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve a channel attribute at the start time of a read.</span>
+<span class="sd">    :param item: the meta item to fetch.</span>
+<span class="sd">    :param channel_meta: dictionary of channel meta.</span>
+<span class="sd">    :param read_meta: read_meta dictionary with `start_time` field</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">read_meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span>
+    <span class="c1"># look for the previous item in channel meta after start.</span>
+    <span class="c1"># handle special case of start=0</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">channel_meta</span><span class="p">[</span><span class="n">item</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">start</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">channel_meta</span><span class="p">[</span><span class="n">item</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="is_saturated_at_read"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.is_saturated_at_read">[docs]</a><span class="k">def</span> <span class="nf">is_saturated_at_read</span><span class="p">(</span><span class="n">states</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve whether the channel is saturated based on the read states.</span>
+<span class="sd">    :param states: iterable of channel states</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;saturated&#39;</span> <span class="ow">in</span> <span class="n">states</span></div>
+
+
+<div class="viewcode-block" id="is_multiple_at_read"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.is_multiple_at_read">[docs]</a><span class="k">def</span> <span class="nf">is_multiple_at_read</span><span class="p">(</span><span class="n">states</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve whether the channel is in the &#39;multiple&#39; state based on the read states.</span>
+<span class="sd">    :param states: iterable of channel states</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;multiple&#39;</span> <span class="ow">in</span> <span class="n">states</span></div>
+
+
+<div class="viewcode-block" id="n_global_flicks_in_read"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.n_global_flicks_in_read">[docs]</a><span class="k">def</span> <span class="nf">n_global_flicks_in_read</span><span class="p">(</span><span class="n">bias_voltage_changes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve number global that occur within the read.</span>
+
+<span class="sd">    :param bias_voltage_changes: structured np array with columns &#39;time&#39; and &#39;set_bias_voltage&#39; used to detect global flicks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># detect global static flicks, as detected by bias &lt; 100 mV.  from fast5 API</span>
+    <span class="c1"># sequencing is reported to be at +180, while a flick features a period</span>
+    <span class="c1"># where the bias is ~ -70 mV. If the bias voltage changes are obtained from</span>
+    <span class="c1"># the asic commands, there is a change from 180 to -70, while if the bias</span>
+    <span class="c1"># changes are parsed from the expt history, the bias changes from 180 to 20,</span>
+    <span class="c1"># then 20 to -70. To handle both cases without double counting, we label</span>
+    <span class="c1"># everything &lt; 100 mV as belonging to a flick - but this may need revising</span>
+    <span class="c1"># if sequencing and/or flick voltages change signicantly. To avoid</span>
+    <span class="c1"># overcounting flicks, we count neighbouring periods in which the voltage is</span>
+    <span class="c1"># &lt; 100 as 1 flick.</span>
+    <span class="n">is_flick</span> <span class="o">=</span> <span class="n">bias_voltage_changes</span><span class="p">[</span><span class="s1">&#39;set_bias_voltage&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">100</span>
+    <span class="c1"># create a mask to retrieve only points when we change in and out of flick</span>
+    <span class="n">flick_state_changes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ediff1d</span><span class="p">(</span><span class="n">is_flick</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">])</span>
+    <span class="n">flick_starts</span> <span class="o">=</span> <span class="n">bias_voltage_changes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">flick_state_changes</span><span class="p">,</span> <span class="n">is_flick</span><span class="p">))]</span>
+    <span class="n">n_global_flicks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">flick_starts</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">n_global_flicks</span></div>
+
+
+<div class="viewcode-block" id="n_active_flicks_in_read"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.n_active_flicks_in_read">[docs]</a><span class="k">def</span> <span class="nf">n_active_flicks_in_read</span><span class="p">(</span><span class="n">mux_changes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve number flicks (either global or active) that occur within the read.</span>
+
+<span class="sd">    :param mux_changes: structured np array with columns &#39;time&#39; and &#39;well_id&#39; used to detect active flicks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># look for changes in mux to unblock muxes</span>
+    <span class="n">unblock_muxes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>
+    <span class="n">unblock_mux_changes</span> <span class="o">=</span> <span class="n">mux_changes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="n">mux_changes</span><span class="p">[</span><span class="s1">&#39;well_id&#39;</span><span class="p">],</span> <span class="n">unblock_muxes</span><span class="p">))]</span>
+    <span class="n">n_active_flicks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unblock_mux_changes</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">n_active_flicks</span></div>
+
+
+<div class="viewcode-block" id="is_off_at_read"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.is_off_at_read">[docs]</a><span class="k">def</span> <span class="nf">is_off_at_read</span><span class="p">(</span><span class="n">mux</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve whether the channel is &#39;off&#39; based on the mux.</span>
+<span class="sd">    :param mux: int, mux</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">mux</span> <span class="o">==</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="windowed_metric"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.windowed_metric">[docs]</a><span class="k">def</span> <span class="nf">windowed_metric</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">window_start</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">window_length</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">feature</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">func_to_apply</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate a windowed metric for a region of events, specified by a start-time post failure and a length.</span>
+
+<span class="sd">    :param events: the events to process, should have `start` field</span>
+<span class="sd">    :param window_start: the start of the event region to summarise</span>
+<span class="sd">    :param window_length: the length of the event region</span>
+<span class="sd">    :param feature: the event feature to summarise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">((</span><span class="n">events</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">window_length</span> <span class="o">+</span> <span class="n">window_start</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">window_start_index</span><span class="p">,</span> <span class="n">window_end_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span>
+        <span class="n">events</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">start</span> <span class="o">+</span> <span class="n">window_start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">window_start</span> <span class="o">+</span> <span class="n">window_length</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">return_value</span>  <span class="o">=</span> <span class="n">func_to_apply</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="n">window_start_index</span><span class="p">:</span><span class="n">window_end_index</span><span class="p">][</span><span class="n">feature</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">return_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">return_value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="entropy"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.entropy">[docs]</a><span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">binned_means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">maximum</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">width</span><span class="p">))</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">binned_means</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">binned_means</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">scipy_entropy</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="threshold_changepoint"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.threshold_changepoint">[docs]</a><span class="k">def</span> <span class="nf">threshold_changepoint</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;down&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Locate end of high (or low if `direction==&#39;up&#39;`) contiguous entries at</span>
+<span class="sd">    the beginning of an array.</span>
+
+<span class="sd">    :param arr: input array</span>
+<span class="sd">    :param threshold: threshold above (below) which a changepoint is detected</span>
+<span class="sd">    :param min_samples: minimum number of entries we need to see under (above)</span>
+<span class="sd">        the threshold to determine a boundary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;down&#39;</span><span class="p">:</span>
+        <span class="n">op1</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">le</span>
+        <span class="n">op2</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">gt</span>
+    <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;up&#39;</span><span class="p">:</span>
+        <span class="n">op1</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">ge</span>
+        <span class="n">op2</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">lt</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Direction must be one of &quot;down&quot; or &quot;up&quot;.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># For when the stall starts below (above) the threshold:</span>
+    <span class="n">count_above</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">start_ev_ind</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">ev_ind</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">arr</span><span class="p">[:</span><span class="mi">100</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">op1</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+            <span class="n">count_above</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">count_above</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">count_above</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">start_ev_ind</span> <span class="o">=</span> <span class="n">ev_ind</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">break</span>
+
+    <span class="n">new_start</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_ev_ind</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">op2</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">threshold</span><span class="p">):</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="n">min_samples</span><span class="p">:</span>
+            <span class="c1"># find the time the first event went below - taking just the number</span>
+            <span class="c1"># away gets the last time *above* the threshold, so add 1</span>
+            <span class="n">new_start</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">-</span> <span class="n">min_samples</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">new_start</span></div>
+
+
+<div class="viewcode-block" id="locate_stall"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.locate_stall">[docs]</a><span class="k">def</span> <span class="nf">locate_stall</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">mad_estimate_events</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Locate a stall (abnormally high currents) at beginning of read.</span>
+
+<span class="sd">    :param events: event data.</span>
+<span class="sd">    :param mad_estimate_events: number of events at end of read to use to</span>
+<span class="sd">       estimate median and median absolute deviation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">med</span><span class="p">,</span> <span class="n">mad</span> <span class="o">=</span> <span class="n">med_mad_data</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">][</span><span class="o">-</span><span class="n">mad_estimate_events</span><span class="p">:])</span>
+    <span class="n">max_thresh</span> <span class="o">=</span> <span class="n">med</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="mf">1.48</span> <span class="o">*</span> <span class="n">mad</span>
+    <span class="n">stall_end</span> <span class="o">=</span> <span class="n">threshold_changepoint</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">],</span> <span class="n">max_thresh</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">stall_end</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">stall_events</span> <span class="o">=</span> <span class="n">events</span><span class="p">[:</span><span class="n">stall_end</span><span class="p">]</span>
+        <span class="n">stall_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">stall_events</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">])</span>
+        <span class="n">stall_median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">stall_events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">])</span>
+        <span class="n">stall_range</span> <span class="o">=</span> <span class="n">range_data</span><span class="p">(</span><span class="n">stall_events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stall_length</span><span class="p">,</span> <span class="n">stall_median</span><span class="p">,</span> <span class="n">stall_range</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">stall_length</span><span class="p">,</span> <span class="n">stall_median</span><span class="p">,</span> <span class="n">stall_range</span></div>
+
+
+<div class="viewcode-block" id="filled_window"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.filled_window">[docs]</a><span class="k">def</span> <span class="nf">filled_window</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">down</span><span class="p">,</span> <span class="n">fill</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a moving window across input data with boundary windows</span>
+<span class="sd">    padded with fill value.</span>
+
+<span class="sd">    :param up: higher offset index position</span>
+<span class="sd">    :param down: lower offset index position, should be negative to indicate</span>
+<span class="sd">        position prior to the considered position.</span>
+<span class="sd">    :param fill: value to use to fill boundaries.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">wlen</span> <span class="o">=</span> <span class="n">up</span> <span class="o">-</span> <span class="n">down</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">down</span><span class="p">)):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">down</span><span class="p">)</span><span class="o">-</span><span class="n">i</span>
+        <span class="k">yield</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">fill</span><span class="p">]</span><span class="o">*</span><span class="n">s</span><span class="p">,</span> <span class="n">data</span><span class="p">[:</span><span class="n">wlen</span><span class="o">-</span><span class="n">s</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">window</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">wlen</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">up</span><span class="p">)):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">up</span><span class="p">)</span><span class="o">-</span><span class="n">i</span>
+        <span class="k">yield</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="p">(</span><span class="n">wlen</span><span class="o">-</span><span class="n">s</span><span class="p">):],</span> <span class="p">[</span><span class="n">fill</span><span class="p">]</span><span class="o">*</span><span class="n">s</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="sliding_metric"><a class="viewcode-back" href="../../../panga.metric.html#panga.metric.metrics.sliding_metric">[docs]</a><span class="k">def</span> <span class="nf">sliding_metric</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">down</span><span class="p">,</span> <span class="n">fill</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate metric over moving window across input data where boundary</span>
+<span class="sd">    windows are padded with fill value.</span>
+
+<span class="sd">    :param data: array-like</span>
+<span class="sd">    :param metric: metric to be applied over the window</span>
+<span class="sd">    :param up: higher offset index position</span>
+<span class="sd">    :param down: lower offset index position, should be negative to indicate</span>
+<span class="sd">        position prior to the considered position</span>
+<span class="sd">    :param fill: value to use to fill boundaries</span>
+
+<span class="sd">    :returns: array of length data</span>
+
+<span class="sd">    .. note: where there are undefined window elements either side of central index</span>
+<span class="sd">        (i.e. at the ends of the array) window is padded with fill prior to applying metric</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">metric</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="k">for</span> <span class="n">window</span> <span class="ow">in</span> <span class="n">filled_window</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">down</span><span class="p">,</span> <span class="n">fill</span><span class="p">)])</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

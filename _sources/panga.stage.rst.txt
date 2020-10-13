@@ -1,0 +1,38 @@
+panga.stage package
+===================
+
+Submodules
+----------
+
+panga.stage.base module
+-----------------------
+
+.. automodule:: panga.stage.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.stage.blocking module
+---------------------------
+
+.. automodule:: panga.stage.blocking
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.stage.simple module
+-------------------------
+
+.. automodule:: panga.stage.simple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: panga.stage
+    :members:
+    :undoc-members:
+    :show-inheritance:

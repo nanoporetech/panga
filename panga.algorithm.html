@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.algorithm package &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="panga.classify package" href="panga.classify.html" />
+    <link rel="prev" title="panga.accumulate package" href="panga.accumulate.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="panga.html">panga package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="panga.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="panga.accumulate.html">panga.accumulate package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">panga.algorithm package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.algorithm.deltasplit">panga.algorithm.deltasplit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.algorithm.read_bounds_from_delta">panga.algorithm.read_bounds_from_delta module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.algorithm">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="panga.classify.html">panga.classify package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.conclude.html">panga.conclude package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.data.html">panga.data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.metric.html">panga.metric package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.split.html">panga.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.stage.html">panga.stage package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.cmdargs">panga.cmdargs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.fileio">panga.fileio module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.iterators">panga.iterators module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.read_builder">panga.read_builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.util">panga.util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="panga.html">panga package</a> &raquo;</li>
+        
+      <li>panga.algorithm package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/panga.algorithm.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="panga-algorithm-package">
+<h1>panga.algorithm package<a class="headerlink" href="#panga-algorithm-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-panga.algorithm.deltasplit">
+<span id="panga-algorithm-deltasplit-module"></span><h2>panga.algorithm.deltasplit module<a class="headerlink" href="#module-panga.algorithm.deltasplit" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="panga.algorithm.deltasplit.read_bounds_from_delta">
+<code class="descclassname">panga.algorithm.deltasplit.</code><code class="descname">read_bounds_from_delta</code><span class="sig-paren">(</span><em>pas</em>, <em>delta=90</em>, <em>look_back_n=3</em>, <em>use_cython=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/algorithm/deltasplit.html#read_bounds_from_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.algorithm.deltasplit.read_bounds_from_delta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-panga.algorithm.read_bounds_from_delta">
+<span id="panga-algorithm-read-bounds-from-delta-module"></span><h2>panga.algorithm.read_bounds_from_delta module<a class="headerlink" href="#module-panga.algorithm.read_bounds_from_delta" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="panga.algorithm.read_bounds_from_delta.read_bounds_from_delta">
+<code class="descclassname">panga.algorithm.read_bounds_from_delta.</code><code class="descname">read_bounds_from_delta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#panga.algorithm.read_bounds_from_delta.read_bounds_from_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detects event boundaries using algorithm copied from ossetra.strand_detector</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.algorithm">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-panga.algorithm" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="panga.classify.html" class="btn btn-neutral float-right" title="panga.classify package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="panga.accumulate.html" class="btn btn-neutral float-left" title="panga.accumulate package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

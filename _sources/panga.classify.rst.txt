@@ -1,0 +1,38 @@
+panga.classify package
+======================
+
+Submodules
+----------
+
+panga.classify.base module
+--------------------------
+
+.. automodule:: panga.classify.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.classify.read\_rules module
+---------------------------------
+
+.. automodule:: panga.classify.read_rules
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.classify.simple module
+----------------------------
+
+.. automodule:: panga.classify.simple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: panga.classify
+    :members:
+    :undoc-members:
+    :show-inheritance:

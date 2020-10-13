@@ -1,0 +1,825 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.split.simple &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../panga.html">panga package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>panga.split.simple</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for panga.split.simple</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">numpy.lib.recfunctions</span> <span class="kn">import</span> <span class="n">append_fields</span><span class="p">,</span> <span class="n">drop_fields</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">gaussian_kde</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">argrelmax</span>
+
+<span class="kn">from</span> <span class="nn">fast5_research.fast5_bulk</span> <span class="kn">import</span> <span class="n">BulkFast5</span>
+<span class="kn">from</span> <span class="nn">fast5_research.util</span> <span class="kn">import</span> <span class="n">get_changes</span>
+
+<span class="kn">from</span> <span class="nn">panga</span> <span class="kn">import</span> <span class="n">iterators</span>
+<span class="kn">from</span> <span class="nn">panga.metric.metrics</span> <span class="kn">import</span> <span class="n">sliding_metric</span>
+<span class="kn">from</span> <span class="nn">panga.fileio</span> <span class="kn">import</span> <span class="n">readchunkedtsv</span>
+
+<span class="kn">from</span> <span class="nn">panga.split.base</span> <span class="kn">import</span> <span class="n">SplitBase</span><span class="p">,</span> <span class="n">Read</span>
+<span class="kn">from</span> <span class="nn">panga.util</span> <span class="kn">import</span> <span class="n">add_prefix</span>
+<span class="kn">from</span> <span class="nn">panga.algorithm.deltasplit</span> <span class="kn">import</span> <span class="n">read_bounds_from_delta</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;FixedInterval&#39;</span><span class="p">,</span> <span class="s1">&#39;Fast5Split&#39;</span><span class="p">,</span> <span class="s1">&#39;DeltaSplit&#39;</span><span class="p">,</span> <span class="s1">&#39;RandomData&#39;</span><span class="p">,</span> <span class="s1">&#39;AdaptiveThreshold&#39;</span><span class="p">,</span> <span class="s1">&#39;SummarySplit&#39;</span><span class="p">,)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Fast5Split"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.Fast5Split">[docs]</a><span class="k">class</span> <span class="nc">Fast5Split</span><span class="p">(</span><span class="n">SplitBase</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fast5</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide read data by utilising pre-calculated split points stored</span>
+<span class="sd">        in fast5 file.</span>
+
+<span class="sd">        :param fast5: fast5 file.</span>
+<span class="sd">        :param channel: channel for which to provide reads.</span>
+<span class="sd">        :param with_events: bool, whether to provide event data.</span>
+<span class="sd">        :param with_raw: bool, whether to provide raw data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Fast5Split</span><span class="p">,</span> <span class="bp">self</span><span class="p">,)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fast5</span> <span class="o">=</span> <span class="n">fast5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span> <span class="o">=</span> <span class="n">with_events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span> <span class="o">=</span> <span class="n">with_raw</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">provides_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">provides_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;read_id&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_classification&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;median_current&#39;</span><span class="p">,</span> <span class="s1">&#39;median_sd&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;range_current&#39;</span><span class="p">,</span> <span class="s1">&#39;median_dwell&#39;</span><span class="p">,</span> <span class="s1">&#39;drift&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;start_time&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;num_events&#39;</span><span class="p">,</span> <span class="s1">&#39;start_event&#39;</span><span class="p">,</span> <span class="s1">&#39;end_event&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mux&#39;</span><span class="p">,</span> <span class="s1">&#39;states&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">,</span> <span class="s1">&#39;mux_changes&#39;</span><span class="p">,</span> <span class="s1">&#39;bias_voltage_changes&#39;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Fast5Split.load_fast5_meta"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.Fast5Split.load_fast5_meta">[docs]</a>    <span class="k">def</span> <span class="nf">load_fast5_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fh</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel_meta</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+        <span class="c1"># fetch context meta from the source bulk file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context_meta</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_context_meta</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context_meta</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># fetch tracking meta from the source bulk file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracking_meta</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_tracking_meta</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracking_meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;device_id&#39;</span><span class="p">:</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="Fast5Split.reads"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.Fast5Split.reads">[docs]</a>    <span class="k">def</span> <span class="nf">reads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Yield `Reads` with various meta data provided by MinKnow.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">BulkFast5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fast5</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+
+            <span class="c1"># load channel, tracking and context meta so we don&#39;t need fast5</span>
+            <span class="c1"># later to e.g. write fast5 files.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_fast5_meta</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+            <span class="c1"># use read classification from the penultimate block of multi-block reads</span>
+            <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_reads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">penultimate_class</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">event_indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">read</span><span class="p">[</span><span class="s1">&#39;event_index_start&#39;</span><span class="p">],</span>
+                                 <span class="n">read</span><span class="p">[</span><span class="s1">&#39;event_index_end&#39;</span><span class="p">])</span>
+
+                <span class="n">read_events</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span><span class="p">:</span>
+                    <span class="n">read_events</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+                                                <span class="n">event_indices</span><span class="o">=</span><span class="n">event_indices</span><span class="p">)</span>
+                    <span class="n">read_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_event_fields</span><span class="p">(</span><span class="n">read_events</span><span class="p">,</span> <span class="n">fh</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
+
+                <span class="c1"># map new dict keys to read columns</span>
+                <span class="n">meta_keys</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="p">(</span><span class="s1">&#39;read_id&#39;</span><span class="p">,</span> <span class="s1">&#39;read_id&#39;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s1">&#39;initial_classification&#39;</span><span class="p">,</span> <span class="s1">&#39;classification&#39;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s1">&#39;median_current&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s1">&#39;median_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;median_sd&#39;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s1">&#39;range_current&#39;</span><span class="p">,</span> <span class="s1">&#39;range&#39;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s1">&#39;median_dwell&#39;</span><span class="p">,</span> <span class="s1">&#39;median_dwell&#39;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s1">&#39;start_time&#39;</span><span class="p">,</span> <span class="s1">&#39;read_start&#39;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;read_length&#39;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s1">&#39;drift&#39;</span><span class="p">,</span> <span class="s1">&#39;drift&#39;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span><span class="n">read</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">meta_keys</span><span class="p">}</span>
+                <span class="n">divide</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;median_dwell&#39;</span><span class="p">,</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span><span class="s1">&#39;start_time&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">divide</span><span class="p">:</span>
+                    <span class="n">meta</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">/</span> <span class="n">fh</span><span class="o">.</span><span class="n">sample_rate</span>
+
+                <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s1">&#39;num_events&#39;</span><span class="p">:</span><span class="n">event_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">event_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="s1">&#39;start_event&#39;</span><span class="p">:</span><span class="n">event_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="s1">&#39;end_event&#39;</span><span class="p">:</span><span class="n">event_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+
+                <span class="p">})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_channel_states</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_keys</span><span class="p">):</span>
+                    <span class="n">extra</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_keys</span><span class="p">)</span>
+                    <span class="n">missing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_keys</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> about to yield read with unexpected metrics. &#39;</span>
+                        <span class="s1">&#39;Extra: </span><span class="si">{}</span><span class="s1">. Missing </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="n">read_raw</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span><span class="p">:</span>
+                    <span class="n">read_raw</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]),</span> <span class="n">use_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">StopIteration</span>
+
+                <span class="k">yield</span> <span class="n">Read</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="n">read_events</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">read_raw</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span> <span class="n">channel_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_meta</span><span class="p">,</span>
+                           <span class="n">context_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">context_meta</span><span class="p">,</span> <span class="n">tracking_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_meta</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_add_channel_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">meta</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add mux, channel and channel states to meta, with special handling of mux 0.</span>
+
+<span class="sd">        For mux 0, find out what last well was (mux 1-4) and look for all states  since when the mux was set to zero.</span>
+<span class="sd">        If with_mux_changes is True, add a table of all mux-change entries with times, and mux-state values (non-enumerated</span>
+<span class="sd">        values, thus allowing for the distinction between e.g. 1:common_voltage_1 and 6:unblock_voltage_1), which both enumerate to well_id 1.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mux</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_mux</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">])</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mux</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># find out what the last well was, and when it was set. Note the mux could still be zero,</span>
+            <span class="c1"># if the well was off from the start of the run</span>
+            <span class="n">mux</span><span class="p">,</span> <span class="n">mux_set_time</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_mux</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">],</span> <span class="n">wells_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_raw_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">mux_set_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mux_set_time</span><span class="p">)</span> <span class="o">/</span> <span class="n">fh</span><span class="o">.</span><span class="n">sample_rate</span>  <span class="c1"># convert from raw index to time</span>
+            <span class="c1"># look for any channel states which might have caused mux to change to zero (e.g. saturated / multiple),</span>
+            <span class="c1"># i.e. look in time window from mux change to end of read</span>
+            <span class="n">states</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_states_in_window</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="n">mux_set_time</span><span class="p">,</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">states</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_states_in_window</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+
+        <span class="n">mux_changes</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_mux_changes_in_window</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+        <span class="c1"># ensure &#39;well_id&#39; changes between rows of the mux_changes struct array</span>
+        <span class="n">mux_changes</span> <span class="o">=</span> <span class="n">get_changes</span><span class="p">(</span><span class="n">mux_changes</span><span class="p">,</span> <span class="n">use_cols</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;well_id&#39;</span><span class="p">,))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;mux changes from </span><span class="si">{}</span><span class="s1"> to </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mux_changes</span><span class="p">))</span>
+        <span class="n">change_times</span> <span class="o">=</span> <span class="n">mux_changes</span><span class="p">[</span><span class="s1">&#39;approx_raw_index&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">fh</span><span class="o">.</span><span class="n">sample_rate</span>
+        <span class="n">mux_changes</span> <span class="o">=</span> <span class="n">drop_fields</span><span class="p">(</span><span class="n">mux_changes</span><span class="p">,</span><span class="s1">&#39;approx_raw_index&#39;</span><span class="p">,</span> <span class="n">usemask</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">mux_changes</span> <span class="o">=</span> <span class="n">append_fields</span><span class="p">(</span><span class="n">mux_changes</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">change_times</span><span class="p">,</span> <span class="n">usemask</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s1">&#39;mux&#39;</span><span class="p">:</span> <span class="n">mux</span><span class="p">,</span>
+            <span class="s1">&#39;states&#39;</span><span class="p">:</span> <span class="n">states</span><span class="p">,</span>
+            <span class="s1">&#39;channel&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+            <span class="s1">&#39;mux_changes&#39;</span><span class="p">:</span> <span class="n">mux_changes</span><span class="p">,</span>
+            <span class="s1">&#39;bias_voltage_changes&#39;</span><span class="p">:</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_bias_voltage_changes_in_window</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+        <span class="p">})</span>
+
+
+    <span class="k">def</span> <span class="nf">_convert_event_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_events</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert event fields &#39;start&#39; and &#39;length&#39; from raw indices into times</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># convert event fields &#39;start&#39; and &#39;length&#39; from raw indices into times</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">read_events</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">/</span> <span class="n">sample_rate</span>
+            <span class="n">read_events</span> <span class="o">=</span> <span class="n">drop_fields</span><span class="p">(</span><span class="n">read_events</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">usemask</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">read_events</span> <span class="o">=</span> <span class="n">append_fields</span><span class="p">(</span><span class="n">read_events</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">usemask</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">read_events</span></div>
+
+
+<div class="viewcode-block" id="DeltaSplit"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.DeltaSplit">[docs]</a><span class="k">class</span> <span class="nc">DeltaSplit</span><span class="p">(</span><span class="n">Fast5Split</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fast5</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">look_back</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide read data using a delta splitter.</span>
+
+<span class="sd">        :param fast5: fast5 file.</span>
+<span class="sd">        :param channel: channel for which to provide reads.</span>
+<span class="sd">        :param with_events: bool, whether to provide event data.</span>
+<span class="sd">        :param with_raw: bool, whether to provide raw data.</span>
+<span class="sd">        :param delta: change in `mean` defining boundaries</span>
+<span class="sd">        :param look_back: number of events over which to look for change `delta`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DeltaSplit</span><span class="p">,</span> <span class="bp">self</span><span class="p">,)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fast5</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="n">with_events</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="n">with_raw</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">max_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_back</span> <span class="o">=</span> <span class="n">look_back</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;start_time&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;start_event&#39;</span><span class="p">,</span> <span class="s1">&#39;end_event&#39;</span><span class="p">,</span> <span class="s1">&#39;num_events&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mux&#39;</span><span class="p">,</span> <span class="s1">&#39;states&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">,</span> <span class="s1">&#39;mux_changes&#39;</span><span class="p">,</span> <span class="s1">&#39;bias_voltage_changes&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="DeltaSplit.reads"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.DeltaSplit.reads">[docs]</a>    <span class="k">def</span> <span class="nf">reads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Yield `Reads` obtained from delta splitting.&quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="n">BulkFast5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fast5</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+
+            <span class="c1"># load channel, tracking and context meta so we don&#39;t need fast5</span>
+            <span class="c1"># later to e.g. write fast5 files.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_fast5_meta</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+            <span class="n">events</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+
+            <span class="n">bounds</span> <span class="o">=</span> <span class="n">read_bounds_from_delta</span><span class="p">(</span>
+                <span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">],</span> <span class="n">delta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span> <span class="n">look_back_n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">look_back</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">event_indices</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">:</span>
+                <span class="n">read_events</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span><span class="p">:</span>
+                    <span class="n">read_events</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">event_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">event_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                    <span class="n">read_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_event_fields</span><span class="p">(</span><span class="n">read_events</span><span class="p">,</span> <span class="n">fh</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
+
+                <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">read_events</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="n">read_events</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">read_events</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;length&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">read_events</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;num_events&#39;</span><span class="p">:</span><span class="n">event_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">event_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="s1">&#39;start_event&#39;</span><span class="p">:</span><span class="n">event_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="s1">&#39;end_event&#39;</span><span class="p">:</span><span class="n">event_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="p">}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_channel_states</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_keys</span><span class="p">):</span>
+                    <span class="n">extra</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_keys</span><span class="p">)</span>
+                    <span class="n">missing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_keys</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> about to yield read with unexpected metrics. &#39;</span>
+                        <span class="s1">&#39;Extra: </span><span class="si">{}</span><span class="s1">. Missing </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="n">read_raw</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span><span class="p">:</span>
+                    <span class="n">read_raw</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]),</span> <span class="n">use_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">StopIteration</span>
+
+                <span class="k">yield</span> <span class="n">Read</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="n">read_events</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">read_raw</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span> <span class="n">channel_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_meta</span><span class="p">,</span>
+                           <span class="n">context_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">context_meta</span><span class="p">,</span> <span class="n">tracking_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_meta</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="FixedInterval"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.FixedInterval">[docs]</a><span class="k">class</span> <span class="nc">FixedInterval</span><span class="p">(</span><span class="n">SplitBase</span><span class="p">):</span>
+
+    <span class="k">def</span>  <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fast5</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide read data by chunking a channel into fixed length pieces.</span>
+
+<span class="sd">        :param fast5: fast5 file to read.</span>
+<span class="sd">        :param channel: channel for which to provide reads.</span>
+<span class="sd">        :param interval: number of events per read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FixedInterval</span><span class="p">,</span> <span class="bp">self</span><span class="p">,)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fast5</span> <span class="o">=</span> <span class="n">fast5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">channel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">provides_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">provides_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FixedInterval.reads"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.FixedInterval.reads">[docs]</a>    <span class="k">def</span> <span class="nf">reads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">BulkFast5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fast5</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="c1"># load channel, tracking and context meta so we don&#39;t need fast5</span>
+            <span class="c1"># later to e.g. write fast5 files.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_fast5_meta</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">iterators</span><span class="o">.</span><span class="n">blocker</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">Read</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="n">chunk</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RandomData"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.RandomData">[docs]</a><span class="k">class</span> <span class="nc">RandomData</span><span class="p">(</span><span class="n">SplitBase</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_reads</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">read_length</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate random reads.</span>
+
+<span class="sd">        :param n_reads: number of reads to produce.</span>
+<span class="sd">        :param read_length: number of events per read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_reads</span> <span class="o">=</span> <span class="n">n_reads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_length</span> <span class="o">=</span> <span class="n">read_length</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">provides_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">provides_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RandomData.reads"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.RandomData.reads">[docs]</a>    <span class="k">def</span> <span class="nf">reads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">spread</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">mean</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_reads</span><span class="p">):</span>
+            <span class="n">read</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[</span>
+                <span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span><span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;stdv&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;length&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+            <span class="p">])</span>
+            <span class="n">read</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">spread</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">read_length</span><span class="p">)</span>
+            <span class="n">read</span><span class="p">[</span><span class="s1">&#39;stdv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">read</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">read</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_length</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">read_length</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Read</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="n">read</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">+=</span> <span class="n">read</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">read</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="AdaptiveThreshold"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.AdaptiveThreshold">[docs]</a><span class="k">class</span> <span class="nc">AdaptiveThreshold</span><span class="p">(</span><span class="n">Fast5Split</span><span class="p">):</span>
+
+    <span class="k">def</span>  <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fast5</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">outpath</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">pore_rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">capture_rank</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">thresh_factor</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">fixed_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rolling_window</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Split based on open-pore and strand-capture levels inferred from distribution of event levels.</span>
+
+<span class="sd">        :param fast5: fast5 file.</span>
+<span class="sd">        :param channel: channel for which to provide reads.</span>
+<span class="sd">        :param threshold: current below which to create a read boundary.</span>
+<span class="sd">        :param outpath: output path for plot.</span>
+<span class="sd">        :param prefix: prefix (prefixed to output plot)</span>
+<span class="sd">        :param pore_rank: int, ranking of pore current within kde local maxima,</span>
+<span class="sd">               defaults corresponds to highest probability peak.</span>
+<span class="sd">        :param capture_rank: int, ranking of capture current within kde local maxima,</span>
+<span class="sd">               defaults corresponds to second highest probability peak.</span>
+<span class="sd">        :param thresh_factor: float, factor determining position of threshold between capture and pore levels. 0.5 corresponds to mid-point.</span>
+<span class="sd">               threshold = capture_level + thresh_factor * (pore_level - capture_level)</span>
+<span class="sd">        :param fixed_threshold: float, use this fixed threshold. If None, calculate threshold.</span>
+<span class="sd">        :param rolling_window: int, use a rolling window of this size over event means.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AdaptiveThreshold</span><span class="p">,</span> <span class="bp">self</span><span class="p">,)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fast5</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="n">with_raw</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">max_time</span><span class="p">)</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_time</span><span class="p">)</span> <span class="k">if</span> <span class="n">max_time</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rolling_window</span> <span class="o">=</span> <span class="n">rolling_window</span>
+        <span class="k">if</span> <span class="n">fixed_threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pore_level</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">capture_level</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_levels</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">pore_rank</span><span class="p">,</span> <span class="n">capture_rank</span><span class="p">,</span> <span class="n">thresh_factor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">fixed_threshold</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pore_level</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">capture_level</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">provides_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">provides_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;start_time&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;start_event&#39;</span><span class="p">,</span> <span class="s1">&#39;end_event&#39;</span><span class="p">,</span> <span class="s1">&#39;num_events&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;mux&#39;</span><span class="p">,</span> <span class="s1">&#39;states&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">,</span> <span class="s1">&#39;mux_changes&#39;</span><span class="p">,</span> <span class="s1">&#39;pore_level&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;capture_level&#39;</span><span class="p">,</span> <span class="s1">&#39;threshold&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;bias_voltage_changes&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="AdaptiveThreshold.reads"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.AdaptiveThreshold.reads">[docs]</a>    <span class="k">def</span> <span class="nf">reads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">BulkFast5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fast5</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+
+            <span class="c1"># load channel, tracking and context meta so we don&#39;t need fast5</span>
+            <span class="c1"># later to e.g. write fast5 files.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_fast5_meta</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+            <span class="n">events</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+            <span class="c1"># convert event fields &#39;start&#39; and &#39;length&#39; from raw indices into times</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="n">times</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">/</span> <span class="n">fh</span><span class="o">.</span><span class="n">sample_rate</span>
+                <span class="n">events</span> <span class="o">=</span> <span class="n">drop_fields</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">usemask</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">events</span> <span class="o">=</span> <span class="n">append_fields</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">usemask</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rolling_window</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ev_mean</span> <span class="o">=</span> <span class="n">sliding_metric</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rolling_window</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">rolling_window</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ev_mean</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span>
+
+            <span class="n">read_bound_event_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ediff1d</span><span class="p">((</span><span class="n">ev_mean</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span> <span class="o">!=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># first event should be start of first read</span>
+            <span class="n">read_bound_event_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">read_bound_event_indices</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># pad end with last event index + 1.</span>
+            <span class="n">read_bound_event_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">read_bound_event_indices</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">start_event</span><span class="p">,</span> <span class="n">next_start_event</span> <span class="ow">in</span> <span class="n">iterators</span><span class="o">.</span><span class="n">window</span><span class="p">(</span><span class="n">read_bound_event_indices</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">read_events</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">start_event</span><span class="p">:</span> <span class="n">next_start_event</span><span class="p">]</span>
+                <span class="n">start_t</span><span class="p">,</span> <span class="n">end_t</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">start_event</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">events</span><span class="p">[</span><span class="n">next_start_event</span><span class="p">][</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
+                <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;start_time&#39;</span><span class="p">:</span> <span class="n">start_t</span><span class="p">,</span>
+                    <span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="n">end_t</span> <span class="o">-</span> <span class="n">start_t</span><span class="p">,</span>
+                    <span class="s1">&#39;pore_level&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pore_level</span><span class="p">,</span>
+                    <span class="s1">&#39;capture_level&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">capture_level</span><span class="p">,</span>
+                    <span class="s1">&#39;threshold&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span>
+                    <span class="s1">&#39;start_event&#39;</span><span class="p">:</span> <span class="n">start_event</span><span class="p">,</span>
+                    <span class="s1">&#39;end_event&#39;</span><span class="p">:</span> <span class="n">next_start_event</span><span class="p">,</span>
+                    <span class="s1">&#39;num_events&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">read_events</span><span class="p">),</span>
+                <span class="p">}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_channel_states</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+                <span class="n">read_raw</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span><span class="p">:</span>
+                    <span class="n">read_raw</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="n">start_t</span><span class="p">,</span> <span class="n">end_t</span><span class="p">),</span> <span class="n">use_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">StopIteration</span>
+
+                <span class="k">yield</span> <span class="n">Read</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="n">read_events</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">read_raw</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span> <span class="n">channel_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_meta</span><span class="p">,</span>
+                           <span class="n">context_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">context_meta</span><span class="p">,</span> <span class="n">tracking_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_meta</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outpath</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pore_rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">capture_rank</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">thresh_factor</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate distribution of event means, and infer open-pore level and  capture level.</span>
+
+<span class="sd">        Assumes the pore level corresoponds to the highest-probability peak in</span>
+<span class="sd">        the distribution, and that the capture level is the second highest.</span>
+
+<span class="sd">        :param outpath: directory in which to plot the distribution and levels.</span>
+<span class="sd">        :param prefix: prefix (prefixed to output plot path)</span>
+<span class="sd">        :param times: (start time, end time) or None</span>
+<span class="sd">        :param pore_rank: int, ranking of pore current within kde local maxima,</span>
+<span class="sd">               defaults corresponds to highest probability peak.</span>
+<span class="sd">        :param capture_rank: int, ranking of capture current within kde local maxima,</span>
+<span class="sd">               defaults corresponds to second highest probability peak.</span>
+<span class="sd">        :param thresh_factor: float, factor f with which to calculate boundary threshold;</span>
+<span class="sd">                threshold = capture_level + f * (pore_level - capture_level)</span>
+<span class="sd">                a value of 0.5 implies the midpoint between pore and capture.</span>
+<span class="sd">        :returns: tuple of floats, (pore_level, capture_level, threshold)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">BulkFast5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fast5</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Loading events for channel </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">))</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Calculating kde for channel </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">))</span>
+        <span class="n">kde</span> <span class="o">=</span> <span class="n">gaussian_kde</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">],</span> <span class="n">bw_method</span><span class="o">=</span><span class="s1">&#39;silverman&#39;</span><span class="p">)</span>  <span class="c1"># silverman is seemingly better for multi-modal dists</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Done calculating kde for channel </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]),</span> <span class="mi">100</span><span class="p">)</span>
+
+        <span class="n">pde_vals</span> <span class="o">=</span> <span class="n">kde</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># evaluate density over grid</span>
+        <span class="n">max_inds</span> <span class="o">=</span> <span class="n">argrelmax</span><span class="p">(</span><span class="n">kde</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>  <span class="c1"># find all local maxima</span>
+        <span class="n">max_probs</span> <span class="o">=</span> <span class="n">pde_vals</span><span class="p">[</span><span class="n">max_inds</span><span class="p">]</span>
+        <span class="n">sorted_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">max_probs</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># so max prob is 1st elem</span>
+        <span class="n">pore_ind</span> <span class="o">=</span> <span class="n">max_inds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">sorted_inds</span><span class="p">[</span><span class="n">pore_rank</span><span class="p">]]</span>
+        <span class="n">capture_ind</span> <span class="o">=</span> <span class="n">max_inds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">sorted_inds</span><span class="p">[</span><span class="n">capture_rank</span><span class="p">]]</span>
+
+        <span class="n">pore_level</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">pore_ind</span><span class="p">]</span>
+        <span class="n">capture_level</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">capture_ind</span><span class="p">]</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="n">capture_level</span> <span class="o">+</span> <span class="n">thresh_factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">pore_level</span> <span class="o">-</span> <span class="n">capture_level</span><span class="p">)</span>
+
+        <span class="c1"># plot kde, histogram and levels.</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;histogram&#39;</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper center&#39;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span>
+        <span class="n">axis2</span> <span class="o">=</span> <span class="n">axis</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+
+        <span class="n">axis2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kde</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+        <span class="n">axis2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">max_inds</span><span class="p">],</span> <span class="n">pde_vals</span><span class="p">[</span><span class="n">max_inds</span><span class="p">],</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;local maxima&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
+        <span class="n">axis2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">pore_ind</span><span class="p">],</span> <span class="n">pde_vals</span><span class="p">[</span><span class="n">pore_ind</span><span class="p">],</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;open pore current&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">axis2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">capture_ind</span><span class="p">],</span> <span class="n">pde_vals</span><span class="p">[</span><span class="n">capture_ind</span><span class="p">],</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;capture current&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">threshold</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;threshold&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;magenta&#39;</span><span class="p">)</span>
+        <span class="n">axis2</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">plot_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">add_prefix</span><span class="p">(</span><span class="s1">&#39;AdaptiveThresholdLevels_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">plot_path</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#pore rank </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pore_rank</span><span class="p">))</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#capture rank </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">capture_rank</span><span class="p">))</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#thresh_factor </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">thresh_factor</span><span class="p">))</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#pore level </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pore_level</span><span class="p">))</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#capture level </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">capture_level</span><span class="p">))</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#threshold level </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold</span><span class="p">))</span>
+            <span class="c1"># write local maxima in kde distribution</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# probability maxima in kde </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;pA&#39;</span><span class="p">,</span> <span class="s1">&#39;kde&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">max_probs</span><span class="p">)):</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">max_inds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">sorted_inds</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">pde_vals</span><span class="p">[</span><span class="n">j</span><span class="p">]]))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="c1"># write sampled kde</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# kde points </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;pA&#39;</span><span class="p">,</span> <span class="s1">&#39;kde&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">pde_vals</span><span class="p">):</span>
+               <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="p">[</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pore_level</span><span class="p">,</span> <span class="n">capture_level</span><span class="p">,</span> <span class="n">threshold</span></div>
+
+
+<div class="viewcode-block" id="SummarySplit"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.SummarySplit">[docs]</a><span class="k">class</span> <span class="nc">SummarySplit</span><span class="p">(</span><span class="n">Fast5Split</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_summary</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">fast5</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_states</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide read data by utilising pre-calculated split points stored</span>
+<span class="sd">        in a summary file.</span>
+
+<span class="sd">        :param input_summary: summary file.</span>
+<span class="sd">        :param channel: channel for which to provide reads.</span>
+<span class="sd">        :param fast5: fast5 file, only needed if with_events, with_raw or with_states is True.</span>
+<span class="sd">        :param with_events: bool, whether to provide event data from the fast5</span>
+<span class="sd">        :param with_raw: bool, whether to provide raw data from the fast5.</span>
+<span class="sd">        :param with_states: if True, add channel state data (mux and channel states) from the fast5.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SummarySplit</span><span class="p">,</span> <span class="bp">self</span><span class="p">,)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fast5</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">with_events</span><span class="o">=</span><span class="n">with_events</span><span class="p">,</span> <span class="n">with_raw</span><span class="o">=</span><span class="n">with_raw</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="n">max_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_summary</span> <span class="o">=</span> <span class="n">input_summary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span> <span class="o">=</span> <span class="n">with_states</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">with_events</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fast5</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Raw, events or channel_states requested, but no fast5 provided&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_summary</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">col_names</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">))</span>
+            <span class="n">col_vals</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_input_summary_cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__guess_dtype</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">col_names</span><span class="p">,</span> <span class="n">col_vals</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">requires_meta</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_summary_cols</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">requires_meta</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_summary_cols</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Input summary does not provide all read meta required &#39;</span>
+                <span class="s1">&#39;: Missing </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">missing</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__guess_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Guess dtype of columns from dict of col name : value pairs&quot;&quot;&quot;</span>
+
+        <span class="n">dtypes</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">read_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">&#39;is_&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>  <span class="c1"># is_saturated, is_multiple etc</span>
+                <span class="n">dtypes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="s1">&#39;current&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>  <span class="c1"># could be current_before, which for first read might be 0 (int)</span>
+                <span class="n">dtypes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">_</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                    <span class="n">dtypes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">_</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                        <span class="n">dtypes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="n">dtypes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span>
+        <span class="k">return</span> <span class="n">dtypes</span>
+
+<div class="viewcode-block" id="SummarySplit.iterate_input_file"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.SummarySplit.iterate_input_file">[docs]</a>    <span class="k">def</span> <span class="nf">iterate_input_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">readchunkedtsv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_summary</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Read chunk </span><span class="si">{}</span><span class="s1"> (</span><span class="si">{}</span><span class="s1"> reads) of input summary&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)))</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span>
+            <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">rec</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">:</span>
+                    <span class="c1"># we only want to process reads for a single channel</span>
+                    <span class="c1"># but this means looping over the file 512 times.. might</span>
+                    <span class="c1"># there be a better way to do this?</span>
+                    <span class="k">continue</span>
+                <span class="k">yield</span> <span class="n">rec</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">requires_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;start_time&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;duration&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;channel&#39;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="s1">&#39;mux&#39;</span><span class="p">,</span> <span class="s1">&#39;states&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">,</span> <span class="s1">&#39;mux_changes&#39;</span><span class="p">,</span> <span class="s1">&#39;bias_voltage_changes&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_summary_cols</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_summary_cols</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="SummarySplit.reads"><a class="viewcode-back" href="../../../panga.split.html#panga.split.simple.SummarySplit.reads">[docs]</a>    <span class="k">def</span> <span class="nf">reads</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Yield `Reads` with various meta data provided by MinKnow.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">:</span>
+            <span class="n">f5</span> <span class="o">=</span> <span class="n">BulkFast5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fast5</span><span class="p">)</span>
+            <span class="c1"># load channel, tracking and context meta so we don&#39;t need fast5</span>
+            <span class="c1"># later to e.g. write fast5 files.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_fast5_meta</span><span class="p">(</span><span class="n">f5</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># initialise fast5/channel meta variables so we have a generic call</span>
+            <span class="c1"># to Read constructor even when we don&#39;t have the fast5</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_meta</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context_meta</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracking_meta</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;start_event&#39;</span><span class="p">,</span> <span class="s1">&#39;end_event&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_keys</span><span class="p">):</span>
+                <span class="n">get_event_bounds</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">meta</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">event_indices</span><span class="o">=</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_event&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;end_event&#39;</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Reading events using timings, this will be slow.&#39;</span><span class="p">)</span>
+                <span class="n">get_event_bounds</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">meta</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]))</span>
+
+        <span class="k">for</span> <span class="n">meta</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterate_input_file</span><span class="p">():</span>
+            <span class="n">read_events</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span><span class="p">:</span>
+                <span class="n">event_bounds</span> <span class="o">=</span> <span class="n">get_event_bounds</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+                <span class="n">read_events</span> <span class="o">=</span> <span class="n">f5</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="o">**</span><span class="n">event_bounds</span><span class="p">)</span>
+                <span class="n">read_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_event_fields</span><span class="p">(</span><span class="n">read_events</span><span class="p">,</span> <span class="n">f5</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">read_events</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Skipping read ch </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> as it spans no events.&#39;</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">event_bounds</span><span class="o">.</span><span class="n">items</span><span class="p">())))</span>
+                    <span class="k">continue</span>
+            <span class="n">read_raw</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span><span class="p">:</span>
+                <span class="n">read_raw</span> <span class="o">=</span> <span class="n">f5</span><span class="o">.</span><span class="n">get_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]),</span> <span class="n">use_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">:</span>  <span class="c1"># add mux, channel states from fast5</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_channel_states</span><span class="p">(</span><span class="n">f5</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start_time&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">StopIteration</span>
+
+            <span class="k">yield</span> <span class="n">Read</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="n">read_events</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">read_raw</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span> <span class="n">channel_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_meta</span><span class="p">,</span>
+                       <span class="n">context_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">context_meta</span><span class="p">,</span> <span class="n">tracking_meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_meta</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_events</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_raw</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_states</span><span class="p">:</span>
+            <span class="n">f5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,686 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.metric package &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="panga.split package" href="panga.split.html" />
+    <link rel="prev" title="panga.data.config package" href="panga.data.config.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="panga.html">panga package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="panga.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="panga.accumulate.html">panga.accumulate package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.algorithm.html">panga.algorithm package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.classify.html">panga.classify package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.conclude.html">panga.conclude package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.data.html">panga.data package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">panga.metric package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.metric.base">panga.metric.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.metric.metrics">panga.metric.metrics module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.metric.simple">panga.metric.simple module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.metric">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="panga.split.html">panga.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.stage.html">panga.stage package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.cmdargs">panga.cmdargs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.fileio">panga.fileio module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.iterators">panga.iterators module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.read_builder">panga.read_builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.util">panga.util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="panga.html">panga package</a> &raquo;</li>
+        
+      <li>panga.metric package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/panga.metric.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="panga-metric-package">
+<h1>panga.metric package<a class="headerlink" href="#panga-metric-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-panga.metric.base">
+<span id="panga-metric-base-module"></span><h2>panga.metric.base module<a class="headerlink" href="#module-panga.metric.base" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.metric.base.MetricBase">
+<em class="property">class </em><code class="descclassname">panga.metric.base.</code><code class="descname">MetricBase</code><span class="sig-paren">(</span><em>splitter</em>, <em>channel_meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/base.html#MetricBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.base.MetricBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="panga.metric.base.MetricBase.process_read">
+<code class="descname">process_read</code><span class="sig-paren">(</span><em>read</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/base.html#MetricBase.process_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.base.MetricBase.process_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a read.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="panga.metric.base.MetricBase.process_reads">
+<code class="descname">process_reads</code><span class="sig-paren">(</span><em>reads</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/base.html#MetricBase.process_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.base.MetricBase.process_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield metrics for a set of reads.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="panga.metric.base.MetricBase.provides">
+<code class="descname">provides</code><a class="headerlink" href="#panga.metric.base.MetricBase.provides" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of metrics which we compute for a read.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="panga.metric.base.MetricBase.register_channel_metric">
+<code class="descname">register_channel_metric</code><span class="sig-paren">(</span><em>name</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/base.html#MetricBase.register_channel_metric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.base.MetricBase.register_channel_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a function to apply to channel data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> – name of metric.</li>
+<li><strong>func</strong> – function to calculate metric. Should accept two
+arguments: <cite>channel_meta</cite> stored in this class, and <cite>.meta</cite>
+attribute of a read.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="panga.metric.base.MetricBase.register_event_metric">
+<code class="descname">register_event_metric</code><span class="sig-paren">(</span><em>name</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/base.html#MetricBase.register_event_metric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.base.MetricBase.register_event_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a function to apply to read event data to produce a metric.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> – name of metric.</li>
+<li><strong>func</strong> – function to calculate metric. Should accept a single
+argument: the <cite>.event</cite> attribute of a read.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="panga.metric.base.MetricBase.register_event_multi_metric">
+<code class="descname">register_event_multi_metric</code><span class="sig-paren">(</span><em>names</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/base.html#MetricBase.register_event_multi_metric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.base.MetricBase.register_event_multi_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a function to apply to read event data to produce a set of
+metrics.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> – name of metric.</li>
+<li><strong>func</strong> – function to calculate metric. Should accept a single
+argument: the <cite>.event</cite> attribute of a read.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="panga.metric.base.MetricBase.register_read_meta_metric">
+<code class="descname">register_read_meta_metric</code><span class="sig-paren">(</span><em>name</em>, <em>resultant=None</em>, <em>func=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/base.html#MetricBase.register_read_meta_metric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.base.MetricBase.register_read_meta_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy meta data from read (optionally apply a function and update name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> – name of metric to copy/use</li>
+<li><strong>resultant</strong> – resultant name of metric</li>
+<li><strong>func</strong> – function to apply to original value of metric</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="panga.metric.base.MetricBase.requires_events">
+<code class="descname">requires_events</code><a class="headerlink" href="#panga.metric.base.MetricBase.requires_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do we require event data in <a href="#id1"><span class="problematic" id="id2">`</span></a>Read`s.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="panga.metric.base.MetricBase.requires_meta">
+<code class="descname">requires_meta</code><a class="headerlink" href="#panga.metric.base.MetricBase.requires_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of read meta keys we expect.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="panga.metric.base.MetricBase.requires_raw">
+<code class="descname">requires_raw</code><a class="headerlink" href="#panga.metric.base.MetricBase.requires_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do we require raw data in <a href="#id3"><span class="problematic" id="id4">`</span></a>Read`s.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.metric.metrics">
+<span id="panga-metric-metrics-module"></span><h2>panga.metric.metrics module<a class="headerlink" href="#module-panga.metric.metrics" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="panga.metric.metrics.apply_to_field">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">apply_to_field</code><span class="sig-paren">(</span><em>function</em>, <em>field</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#apply_to_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.apply_to_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a function which applies a given function to an attribute of an
+object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>function</strong> – function to apply, e.g. <cite>np.mean</cite>.</li>
+<li><strong>field</strong> – attribute of an object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.duration">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">duration</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#duration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate total duration of events array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>events</strong> – the events to process, should have <cite>start</cite> and
+<cite>length</cite> fields.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.entropy">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">entropy</code><span class="sig-paren">(</span><em>arr</em>, <em>maximum=600</em>, <em>width=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.entropy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.filled_window">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">filled_window</code><span class="sig-paren">(</span><em>data</em>, <em>up</em>, <em>down</em>, <em>fill</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#filled_window"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.filled_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a moving window across input data with boundary windows
+padded with fill value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>up</strong> – higher offset index position</li>
+<li><strong>down</strong> – lower offset index position, should be negative to indicate
+position prior to the considered position.</li>
+<li><strong>fill</strong> – value to use to fill boundaries.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.get_channel_attr">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">get_channel_attr</code><span class="sig-paren">(</span><em>item</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#get_channel_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.get_channel_attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a pure channel attribute, not dependent on read meta. This
+is only required as metric interface determines the interface.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.get_channel_attr_at_read">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">get_channel_attr_at_read</code><span class="sig-paren">(</span><em>item</em>, <em>channel_meta</em>, <em>read_meta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#get_channel_attr_at_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.get_channel_attr_at_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a channel attribute at the start time of a read.
+:param item: the meta item to fetch.
+:param channel_meta: dictionary of channel meta.
+:param read_meta: read_meta dictionary with <cite>start_time</cite> field</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.get_read_meta_attr">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">get_read_meta_attr</code><span class="sig-paren">(</span><em>item</em>, <em>read_meta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#get_read_meta_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.get_read_meta_attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a pure read meta attribute, not dependent on channel meta. This
+is only required as metric interface determines the interface.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.is_multiple_at_read">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">is_multiple_at_read</code><span class="sig-paren">(</span><em>states</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#is_multiple_at_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.is_multiple_at_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve whether the channel is in the ‘multiple’ state based on the read states.
+:param states: iterable of channel states</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.is_off_at_read">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">is_off_at_read</code><span class="sig-paren">(</span><em>mux</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#is_off_at_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.is_off_at_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve whether the channel is ‘off’ based on the mux.
+:param mux: int, mux</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.is_saturated_at_read">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">is_saturated_at_read</code><span class="sig-paren">(</span><em>states</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#is_saturated_at_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.is_saturated_at_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve whether the channel is saturated based on the read states.
+:param states: iterable of channel states</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.locate_stall">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">locate_stall</code><span class="sig-paren">(</span><em>events</em>, <em>mad_estimate_events=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#locate_stall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.locate_stall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Locate a stall (abnormally high currents) at beginning of read.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>events</strong> – event data.</li>
+<li><strong>mad_estimate_events</strong> – number of events at end of read to use to
+estimate median and median absolute deviation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.med_mad_data">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">med_mad_data</code><span class="sig-paren">(</span><em>data</em>, <em>axis=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#med_mad_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.med_mad_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Median Absolute Deviation, i.e., the median
+of the absolute deviations from the median, and the median</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> – A <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code> object</li>
+<li><strong>axis</strong> – For multidimensional arrays, which axis to calculate over</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a tuple containing the median and MAD of the data</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.n_active_flicks_in_read">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">n_active_flicks_in_read</code><span class="sig-paren">(</span><em>mux_changes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#n_active_flicks_in_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.n_active_flicks_in_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve number flicks (either global or active) that occur within the read.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mux_changes</strong> – structured np array with columns ‘time’ and ‘well_id’ used to detect active flicks</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.n_global_flicks_in_read">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">n_global_flicks_in_read</code><span class="sig-paren">(</span><em>bias_voltage_changes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#n_global_flicks_in_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.n_global_flicks_in_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve number global that occur within the read.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bias_voltage_changes</strong> – structured np array with columns ‘time’ and ‘set_bias_voltage’ used to detect global flicks.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.range_data">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">range_data</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#range_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.range_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a range measure for a field.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.read_start_time">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">read_start_time</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#read_start_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.read_start_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simply return the time of the first event.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.sliding_metric">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">sliding_metric</code><span class="sig-paren">(</span><em>data</em>, <em>metric</em>, <em>up</em>, <em>down</em>, <em>fill</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#sliding_metric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.sliding_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate metric over moving window across input data where boundary
+windows are padded with fill value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> – array-like</li>
+<li><strong>metric</strong> – metric to be applied over the window</li>
+<li><strong>up</strong> – higher offset index position</li>
+<li><strong>down</strong> – lower offset index position, should be negative to indicate
+position prior to the considered position</li>
+<li><strong>fill</strong> – value to use to fill boundaries</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array of length data</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.threshold_changepoint">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">threshold_changepoint</code><span class="sig-paren">(</span><em>arr</em>, <em>threshold</em>, <em>min_samples=3</em>, <em>direction='down'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#threshold_changepoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.threshold_changepoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Locate end of high (or low if <cite>direction==’up’</cite>) contiguous entries at
+the beginning of an array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>arr</strong> – input array</li>
+<li><strong>threshold</strong> – threshold above (below) which a changepoint is detected</li>
+<li><strong>min_samples</strong> – minimum number of entries we need to see under (above)
+the threshold to determine a boundary.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="panga.metric.metrics.windowed_metric">
+<code class="descclassname">panga.metric.metrics.</code><code class="descname">windowed_metric</code><span class="sig-paren">(</span><em>events</em>, <em>window_start=0.002</em>, <em>window_length=0.5</em>, <em>feature='mean'</em>, <em>func_to_apply=&lt;function mean&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/metrics.html#windowed_metric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.metrics.windowed_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a windowed metric for a region of events, specified by a start-time post failure and a length.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>events</strong> – the events to process, should have <cite>start</cite> field</li>
+<li><strong>window_start</strong> – the start of the event region to summarise</li>
+<li><strong>window_length</strong> – the length of the event region</li>
+<li><strong>feature</strong> – the event feature to summarise</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.metric.simple">
+<span id="panga-metric-simple-module"></span><h2>panga.metric.simple module<a class="headerlink" href="#module-panga.metric.simple" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.metric.simple.SimpleMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">SimpleMetrics</code><span class="sig-paren">(</span><em>splitter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#SimpleMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.SimpleMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.base.MetricBase" title="panga.metric.base.MetricBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.base.MetricBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.metric.simple.MockMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">MockMetrics</code><span class="sig-paren">(</span><em>*metrics</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#MockMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.MockMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.base.MetricBase" title="panga.metric.base.MetricBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.base.MetricBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.metric.simple.StandardMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">StandardMetrics</code><span class="sig-paren">(</span><em>splitter</em>, <em>channel_meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#StandardMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.StandardMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.base.MetricBase" title="panga.metric.base.MetricBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.base.MetricBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.metric.simple.StandardMinionMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">StandardMinionMetrics</code><span class="sig-paren">(</span><em>splitter</em>, <em>channel_meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#StandardMinionMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.StandardMinionMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.simple.StandardMetrics" title="panga.metric.simple.StandardMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.simple.StandardMetrics</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.metric.simple.StandardMinknowMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">StandardMinknowMetrics</code><span class="sig-paren">(</span><em>splitter</em>, <em>channel_meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#StandardMinknowMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.StandardMinknowMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.base.MetricBase" title="panga.metric.base.MetricBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.base.MetricBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.metric.simple.SummaryMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">SummaryMetrics</code><span class="sig-paren">(</span><em>splitter</em>, <em>channel_meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#SummaryMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.SummaryMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.base.MetricBase" title="panga.metric.base.MetricBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.base.MetricBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.metric.simple.SolidStateMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">SolidStateMetrics</code><span class="sig-paren">(</span><em>splitter</em>, <em>channel_meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#SolidStateMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.SolidStateMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.simple.StandardMinionMetrics" title="panga.metric.simple.StandardMinionMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.simple.StandardMinionMetrics</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.metric.simple.BlockingMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">BlockingMetrics</code><span class="sig-paren">(</span><em>splitter</em>, <em>channel_meta=None</em>, <em>window_bounds=(0</em>, <em>1</em>, <em>3</em>, <em>500</em>, <em>900)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#BlockingMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.BlockingMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.simple.StandardMinionMetrics" title="panga.metric.simple.StandardMinionMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.simple.StandardMinionMetrics</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.metric.simple.SummaryAndStandardMetrics">
+<em class="property">class </em><code class="descclassname">panga.metric.simple.</code><code class="descname">SummaryAndStandardMetrics</code><span class="sig-paren">(</span><em>splitter</em>, <em>channel_meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/metric/simple.html#SummaryAndStandardMetrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.metric.simple.SummaryAndStandardMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.metric.simple.SummaryMetrics" title="panga.metric.simple.SummaryMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.simple.SummaryMetrics</span></code></a>, <a class="reference internal" href="#panga.metric.simple.StandardMetrics" title="panga.metric.simple.StandardMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.metric.simple.StandardMetrics</span></code></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.metric">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-panga.metric" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="panga.split.html" class="btn btn-neutral float-right" title="panga.split package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="panga.data.config.html" class="btn btn-neutral float-left" title="panga.data.config package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

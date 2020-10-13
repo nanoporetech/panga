@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.accumulate package &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="panga.algorithm package" href="panga.algorithm.html" />
+    <link rel="prev" title="panga package" href="panga.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="panga.html">panga package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="panga.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">panga.accumulate package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.accumulate.base">panga.accumulate.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.accumulate.blocking_report">panga.accumulate.blocking_report module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.accumulate.simple">panga.accumulate.simple module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.accumulate.visualize">panga.accumulate.visualize module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-panga.accumulate">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="panga.algorithm.html">panga.algorithm package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.classify.html">panga.classify package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.conclude.html">panga.conclude package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.data.html">panga.data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.metric.html">panga.metric package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.split.html">panga.split package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="panga.stage.html">panga.stage package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.cmdargs">panga.cmdargs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.fileio">panga.fileio module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.iterators">panga.iterators module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.read_builder">panga.read_builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga.util">panga.util module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="panga.html#module-panga">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="panga.html">panga package</a> &raquo;</li>
+        
+      <li>panga.accumulate package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/panga.accumulate.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="panga-accumulate-package">
+<h1>panga.accumulate package<a class="headerlink" href="#panga-accumulate-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-panga.accumulate.base">
+<span id="panga-accumulate-base-module"></span><h2>panga.accumulate.base module<a class="headerlink" href="#module-panga.accumulate.base" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.accumulate.base.AccumulateBase">
+<em class="property">class </em><code class="descclassname">panga.accumulate.base.</code><code class="descname">AccumulateBase</code><span class="sig-paren">(</span><em>class_filter=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/base.html#AccumulateBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.base.AccumulateBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="panga.accumulate.base.AccumulateBase.finalize">
+<code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/base.html#AccumulateBase.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.base.AccumulateBase.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleanup resources. Clients can call this method to properly cleanup
+resources such as filehandles or network connections.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="panga.accumulate.base.AccumulateBase.process_read">
+<code class="descname">process_read</code><span class="sig-paren">(</span><em>read_metrics</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/base.html#AccumulateBase.process_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.base.AccumulateBase.process_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulate a single set of read metrics.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="panga.accumulate.base.AccumulateBase.process_reads">
+<code class="descname">process_reads</code><span class="sig-paren">(</span><em>reads</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/base.html#AccumulateBase.process_reads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.base.AccumulateBase.process_reads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulate an iterable of read metrics.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.accumulate.blocking_report">
+<span id="panga-accumulate-blocking-report-module"></span><h2>panga.accumulate.blocking_report module<a class="headerlink" href="#module-panga.accumulate.blocking_report" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.accumulate.blocking_report.BlockingReport">
+<em class="property">class </em><code class="descclassname">panga.accumulate.blocking_report.</code><code class="descname">BlockingReport</code><span class="sig-paren">(</span><em>outpath=None</em>, <em>filtered_summary='read_summary_filtered.txt'</em>, <em>filter_classes=None</em>, <em>filter_counts=None</em>, <em>filter_durations=None</em>, <em>filter_sum_duration=None</em>, <em>prefix=''</em>, <em>meta=None</em>, <em>filter_ch_mux=False</em>, <em>block_class='bermuda'</em>, <em>block_ch_report='block_channel_report.txt'</em>, <em>block_run_report='block_run_report.txt'</em>, <em>static_classes=(('bermuda'</em>, <em>'Red')</em>, <em>('unproductive'</em>, <em>'Black')</em>, <em>('pore'</em>, <em>'Blue')</em>, <em>('strand'</em>, <em>'LawnGreen')</em>, <em>('adapter'</em>, <em>'Olive'))</em>, <em>make_plots=True</em>, <em>plot_hist_cols=('time_to_first_bermuda'</em>, <em>'sum_duration_pore_to_first_bermuda'</em>, <em>'sum_duration_unproductive_to_first_bermuda')</em>, <em>plot_hist_sum_cols={'n_adapter_or_strand_to_first_bermuda': ('n_adapter_to_first_bermuda'</em>, <em>'n_strand_to_first_bermuda')</em>, <em>'sum_duration_productive_to_first_bermuda': ('sum_duration_pore_to_first_bermuda'</em>, <em>'sum_duration_strand_to_first_bermuda'</em>, <em>'sum_duration_adapter_to_first_bermuda')}</em>, <em>hist_bins=20</em>, <em>plot_count_cols=('n_bermuda'</em>, <em>)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/blocking_report.html#BlockingReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.blocking_report.BlockingReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.base.AccumulateBase" title="panga.accumulate.base.AccumulateBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.base.AccumulateBase</span></code></a></p>
+<dl class="method">
+<dt id="panga.accumulate.blocking_report.BlockingReport.finalize">
+<code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/blocking_report.html#BlockingReport.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.blocking_report.BlockingReport.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalize filtered_summary and perform post_processing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="panga.accumulate.blocking_report.BlockingReport.generate_plots">
+<code class="descname">generate_plots</code><span class="sig-paren">(</span><em>ch_results</em>, <em>run_results</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/blocking_report.html#BlockingReport.generate_plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.blocking_report.BlockingReport.generate_plots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="panga.accumulate.blocking_report.BlockingReport.make_bar_chart">
+<em class="property">static </em><code class="descname">make_bar_chart</code><span class="sig-paren">(</span><em>data</em>, <em>plot_path</em>, <em>prefix=''</em>, <em>x_label=''</em>, <em>bin_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/blocking_report.html#BlockingReport.make_bar_chart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.blocking_report.BlockingReport.make_bar_chart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="panga.accumulate.blocking_report.BlockingReport.make_stacked_duty_time">
+<em class="property">static </em><code class="descname">make_stacked_duty_time</code><span class="sig-paren">(</span><em>results_dict</em>, <em>plot_path</em>, <em>col_prefix='pcnt_time_'</em>, <em>colours_dict={}</em>, <em>x_label=''</em>, <em>y_label='% Time'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/blocking_report.html#BlockingReport.make_stacked_duty_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.blocking_report.BlockingReport.make_stacked_duty_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="panga.accumulate.blocking_report.BlockingReport.plot_exp_hist">
+<em class="property">static </em><code class="descname">plot_exp_hist</code><span class="sig-paren">(</span><em>data</em>, <em>plot_path</em>, <em>prefix=''</em>, <em>x_label=''</em>, <em>n_bins=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/blocking_report.html#BlockingReport.plot_exp_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.blocking_report.BlockingReport.plot_exp_hist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.accumulate.simple">
+<span id="panga-accumulate-simple-module"></span><h2>panga.accumulate.simple module<a class="headerlink" href="#module-panga.accumulate.simple" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.accumulate.simple.MetricSummary">
+<em class="property">class </em><code class="descclassname">panga.accumulate.simple.</code><code class="descname">MetricSummary</code><span class="sig-paren">(</span><em>outpath=None</em>, <em>summary_file=None</em>, <em>class_filter=None</em>, <em>prefix=''</em>, <em>meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/simple.html#MetricSummary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.simple.MetricSummary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.base.AccumulateBase" title="panga.accumulate.base.AccumulateBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.base.AccumulateBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.accumulate.simple.CountClasses">
+<em class="property">class </em><code class="descclassname">panga.accumulate.simple.</code><code class="descname">CountClasses</code><a class="reference internal" href="_modules/panga/accumulate/simple.html#CountClasses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.simple.CountClasses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.base.AccumulateBase" title="panga.accumulate.base.AccumulateBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.base.AccumulateBase</span></code></a></p>
+<dl class="method">
+<dt id="panga.accumulate.simple.CountClasses.finalize">
+<code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/simple.html#CountClasses.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.simple.CountClasses.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleanup resources. Clients can call this method to properly cleanup
+resources such as filehandles or network connections.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.accumulate.simple.ClassicMetricSummary">
+<em class="property">class </em><code class="descclassname">panga.accumulate.simple.</code><code class="descname">ClassicMetricSummary</code><span class="sig-paren">(</span><em>outpath=None</em>, <em>summary_file=None</em>, <em>prefix=''</em>, <em>meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/simple.html#ClassicMetricSummary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.simple.ClassicMetricSummary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.base.AccumulateBase" title="panga.accumulate.base.AccumulateBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.base.AccumulateBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.accumulate.simple.FilteredMetricSummary">
+<em class="property">class </em><code class="descclassname">panga.accumulate.simple.</code><code class="descname">FilteredMetricSummary</code><span class="sig-paren">(</span><em>outpath=None</em>, <em>filtered_summary='read_summary_filtered.txt'</em>, <em>filter_classes=('strand'</em>, <em>'pore'</em>, <em>'adapter')</em>, <em>filter_counts=None</em>, <em>filter_durations=None</em>, <em>filter_sum_duration=None</em>, <em>prefix=''</em>, <em>meta=None</em>, <em>filter_ch_mux=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/simple.html#FilteredMetricSummary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.simple.FilteredMetricSummary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.simple.MetricSummary" title="panga.accumulate.simple.MetricSummary"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.simple.MetricSummary</span></code></a></p>
+<dl class="method">
+<dt id="panga.accumulate.simple.FilteredMetricSummary.finalize">
+<code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/simple.html#FilteredMetricSummary.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.simple.FilteredMetricSummary.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>If required, filter out reads from ch/mux combinations which were multiple/saturated at any point,
+or had less than the minimum count of each read class in self.min_counts.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.accumulate.simple.ChannelReport">
+<em class="property">class </em><code class="descclassname">panga.accumulate.simple.</code><code class="descname">ChannelReport</code><span class="sig-paren">(</span><em>outpath=None</em>, <em>channel_report='channel_report.txt'</em>, <em>report_class='saturated'</em>, <em>end_of_read=True</em>, <em>prefix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/simple.html#ChannelReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.simple.ChannelReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.base.AccumulateBase" title="panga.accumulate.base.AccumulateBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.base.AccumulateBase</span></code></a></p>
+<dl class="method">
+<dt id="panga.accumulate.simple.ChannelReport.finalize">
+<code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/simple.html#ChannelReport.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.simple.ChannelReport.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the channel report.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.accumulate.visualize">
+<span id="panga-accumulate-visualize-module"></span><h2>panga.accumulate.visualize module<a class="headerlink" href="#module-panga.accumulate.visualize" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="panga.accumulate.visualize.DutyTimePlot">
+<em class="property">class </em><code class="descclassname">panga.accumulate.visualize.</code><code class="descname">DutyTimePlot</code><span class="sig-paren">(</span><em>outpath</em>, <em>prefix</em>, <em>time_binning=2</em>, <em>class_filter=None</em>, <em>outfile='duty_time'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/visualize.html#DutyTimePlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.visualize.DutyTimePlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.base.AccumulateBase" title="panga.accumulate.base.AccumulateBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.base.AccumulateBase</span></code></a></p>
+<dl class="method">
+<dt id="panga.accumulate.visualize.DutyTimePlot.finalize">
+<code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/visualize.html#DutyTimePlot.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.visualize.DutyTimePlot.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleanup resources. Clients can call this method to properly cleanup
+resources such as filehandles or network connections.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.accumulate.visualize.DutyTimeDistPlot">
+<em class="property">class </em><code class="descclassname">panga.accumulate.visualize.</code><code class="descname">DutyTimeDistPlot</code><span class="sig-paren">(</span><em>outpath</em>, <em>prefix</em>, <em>nbins=10</em>, <em>duty_class='strand'</em>, <em>outfile='duty_time_dist'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/visualize.html#DutyTimeDistPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.visualize.DutyTimeDistPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.base.AccumulateBase" title="panga.accumulate.base.AccumulateBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.base.AccumulateBase</span></code></a></p>
+<dl class="method">
+<dt id="panga.accumulate.visualize.DutyTimeDistPlot.finalize">
+<code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/visualize.html#DutyTimeDistPlot.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.visualize.DutyTimeDistPlot.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleanup resources. Clients can call this method to properly cleanup
+resources such as filehandles or network connections.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="panga.accumulate.visualize.EventRatePlot">
+<em class="property">class </em><code class="descclassname">panga.accumulate.visualize.</code><code class="descname">EventRatePlot</code><span class="sig-paren">(</span><em>outpath</em>, <em>prefix</em>, <em>time_binning=60</em>, <em>class_filter='strand'</em>, <em>outfile='event_rate.png'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/visualize.html#EventRatePlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.visualize.EventRatePlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#panga.accumulate.base.AccumulateBase" title="panga.accumulate.base.AccumulateBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">panga.accumulate.base.AccumulateBase</span></code></a></p>
+<dl class="method">
+<dt id="panga.accumulate.visualize.EventRatePlot.finalize">
+<code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/panga/accumulate/visualize.html#EventRatePlot.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#panga.accumulate.visualize.EventRatePlot.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleanup resources. Clients can call this method to properly cleanup
+resources such as filehandles or network connections.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-panga.accumulate">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-panga.accumulate" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="panga.algorithm.html" class="btn btn-neutral float-right" title="panga.algorithm package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="panga.html" class="btn btn-neutral float-left" title="panga package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

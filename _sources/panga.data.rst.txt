@@ -1,0 +1,17 @@
+panga.data package
+==================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    panga.data.config
+
+Module contents
+---------------
+
+.. automodule:: panga.data
+    :members:
+    :undoc-members:
+    :show-inheritance:

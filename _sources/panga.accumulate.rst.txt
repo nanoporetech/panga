@@ -1,0 +1,46 @@
+panga.accumulate package
+========================
+
+Submodules
+----------
+
+panga.accumulate.base module
+----------------------------
+
+.. automodule:: panga.accumulate.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.accumulate.blocking\_report module
+----------------------------------------
+
+.. automodule:: panga.accumulate.blocking_report
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.accumulate.simple module
+------------------------------
+
+.. automodule:: panga.accumulate.simple
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+panga.accumulate.visualize module
+---------------------------------
+
+.. automodule:: panga.accumulate.visualize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: panga.accumulate
+    :members:
+    :undoc-members:
+    :show-inheritance:

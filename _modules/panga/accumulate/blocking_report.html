@@ -1,0 +1,598 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>panga.accumulate.blocking_report &mdash; Panga 0.1.11 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Panga
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.11
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../panga.html">panga package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Panga</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>panga.accumulate.blocking_report</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for panga.accumulate.blocking_report</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">string</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">expon</span>
+<span class="kn">from</span> <span class="nn">panga.accumulate.base</span> <span class="kn">import</span> <span class="n">AccumulateBase</span>
+<span class="kn">from</span> <span class="nn">panga.accumulate.simple</span> <span class="kn">import</span> <span class="n">FilteredMetricSummary</span>
+<span class="kn">from</span> <span class="nn">panga.util</span> <span class="kn">import</span> <span class="n">add_prefix</span>
+<span class="kn">from</span> <span class="nn">panga.accumulate.visualize</span> <span class="kn">import</span> <span class="n">choose_colour</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span><span class="p">;</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># enforce non-interactive backend</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="k">as</span> <span class="nn">ticker</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BlockingReport"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.blocking_report.BlockingReport">[docs]</a><span class="k">class</span> <span class="nc">BlockingReport</span><span class="p">(</span><span class="n">AccumulateBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filtered_summary</span><span class="o">=</span><span class="s1">&#39;read_summary_filtered.txt&#39;</span><span class="p">,</span>
+                 <span class="n">filter_classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_counts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_durations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_sum_duration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_ch_mux</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">block_class</span><span class="o">=</span><span class="s1">&#39;bermuda&#39;</span><span class="p">,</span> <span class="n">block_ch_report</span><span class="o">=</span><span class="s1">&#39;block_channel_report.txt&#39;</span><span class="p">,</span> <span class="n">block_run_report</span><span class="o">=</span><span class="s1">&#39;block_run_report.txt&#39;</span><span class="p">,</span>
+                 <span class="n">static_classes</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;bermuda&#39;</span><span class="p">,</span> <span class="s1">&#39;Red&#39;</span><span class="p">),</span>
+                                   <span class="p">(</span><span class="s1">&#39;unproductive&#39;</span><span class="p">,</span> <span class="s1">&#39;Black&#39;</span><span class="p">),</span>
+                                   <span class="p">(</span><span class="s1">&#39;pore&#39;</span><span class="p">,</span> <span class="s1">&#39;Blue&#39;</span><span class="p">),</span>
+                                   <span class="p">(</span><span class="s1">&#39;strand&#39;</span><span class="p">,</span> <span class="s1">&#39;LawnGreen&#39;</span><span class="p">),</span>
+                                   <span class="p">(</span><span class="s1">&#39;adapter&#39;</span><span class="p">,</span> <span class="s1">&#39;Olive&#39;</span><span class="p">)),</span>
+                 <span class="n">make_plots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">plot_hist_cols</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;time_to_first_bermuda&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;sum_duration_pore_to_first_bermuda&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;sum_duration_unproductive_to_first_bermuda&#39;</span><span class="p">,</span>
+                                 <span class="p">),</span>
+                 <span class="n">plot_hist_sum_cols</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;n_adapter_or_strand_to_first_bermuda&#39;</span><span class="p">:</span>
+                                         <span class="p">(</span><span class="s1">&#39;n_adapter_to_first_bermuda&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;n_strand_to_first_bermuda&#39;</span><span class="p">),</span>
+                                     <span class="s1">&#39;sum_duration_productive_to_first_bermuda&#39;</span><span class="p">:</span>
+                                         <span class="p">(</span><span class="s1">&#39;sum_duration_pore_to_first_bermuda&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sum_duration_strand_to_first_bermuda&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;sum_duration_adapter_to_first_bermuda&#39;</span><span class="p">,)</span>
+                 <span class="p">},</span>
+                 <span class="n">hist_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">plot_count_cols</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;n_bermuda&#39;</span><span class="p">,)</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a FilteredSummary and perform some post-procesing of it,</span>
+<span class="sd">        generating run-level and channel-level aggregated results.</span>
+<span class="sd">        :param outpath: output path for file.</span>
+<span class="sd">        :param filtered_summary: str, filename for output.</span>
+<span class="sd">        :param filter_classes: tuple of read classes to include in summary.</span>
+<span class="sd">        :param filter_counts: dict specifying minimum number of reads per read</span>
+<span class="sd">               class below which the channel/mux combination will not app ear in the</span>
+<span class="sd">               filtered summary (e.g. {&#39;strand&#39;: 10} to exclude channels with &lt;10 strands.</span>
+<span class="sd">        :param filter_durations: dict specifying minimum summed duration of reads per</span>
+<span class="sd">               class below which the channel/mux combination will not app ear in the</span>
+<span class="sd">               filtered summary (e.g. {&#39;pore&#39;: 120} to exclude channels with &lt;120 seconds of pore time.</span>
+<span class="sd">        :param filter_sum_duration: int, sum of read durations below which a</span>
+<span class="sd">               channel/mux combination will not appear in the filtered summary.</span>
+<span class="sd">        :param prefix: run identifier to include in summary file.</span>
+<span class="sd">        :param meta: dict of meta data to output for each read.</span>
+<span class="sd">                     keys are column names, values the value to output for each row.</span>
+<span class="sd">        :param filter_ch_mux: bool, whether to remove channel-mux combinations</span>
+<span class="sd">               which ever were is_saturated, is_multiple or had class=&#39;multiple&#39;</span>
+<span class="sd">        :param block_class: block class for reporting n_to_first etc.</span>
+<span class="sd">        :param block_ch_report: str, filename of per-channel report</span>
+<span class="sd">        :param block_run_report: str, filename of per-run report</span>
+<span class="sd">        :param static_classes: iterable of tuples of str (class, colour) for stacked duty-time plot.</span>
+<span class="sd">        :param make_plots: bool, whether to make plots.</span>
+<span class="sd">        :param plot_hist_cols: iterable of str, columns for which to plot a histogram from pre-channel/mux results.</span>
+<span class="sd">        :param plot_hist_sum_cols: dict, specifying which cols to sum before plotting a histogram from pre-channel/mux results.</span>
+<span class="sd">               keys are names of the summed data, keys are iterables of columns names.</span>
+<span class="sd">        :param hist_bins: int, number of histogram bins.</span>
+<span class="sd">        :param plot_count_cols: iterable of str specifying which metrics for which to plot a histogram with bin_size 1 over ch/muxes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span> <span class="o">=</span> <span class="n">FilteredMetricSummary</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">filtered_summary</span><span class="o">=</span><span class="n">filtered_summary</span><span class="p">,</span>
+                                                      <span class="n">filter_classes</span><span class="o">=</span><span class="n">filter_classes</span><span class="p">,</span>
+                                                      <span class="n">filter_counts</span><span class="o">=</span><span class="n">filter_counts</span><span class="p">,</span>
+                                                      <span class="n">filter_durations</span><span class="o">=</span><span class="n">filter_durations</span><span class="p">,</span>
+                                                      <span class="n">filter_sum_duration</span><span class="o">=</span><span class="n">filter_sum_duration</span><span class="p">,</span>
+                                                      <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+                                                      <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
+                                                      <span class="n">filter_ch_mux</span><span class="o">=</span><span class="n">filter_ch_mux</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">class_filter</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># force processing of every read</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BlockingReport</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">class_filter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">class_filter</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_class</span> <span class="o">=</span> <span class="n">block_class</span>
+
+        <span class="c1"># for ch/muxes without a block, we don&#39;t want to put zeros for</span>
+        <span class="c1"># n_reads to block, or sum_duration to_block, but rather make it</span>
+        <span class="c1"># chear that for those channels, there is no block, and thus no value</span>
+        <span class="n">get_nan</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>  <span class="c1"># default dict arg needs to be callable</span>
+        <span class="n">get_m1</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># default dict arg needs to be callable, int can&#39;t be nan</span>
+        <span class="c1"># record time to first block for each ch / mux</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_to_block</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="n">get_nan</span><span class="p">))</span>
+        <span class="c1"># record n reads of each class to first block for each ch / mux / klass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_reads_to_block</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="n">get_m1</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">duration_reads_to_block</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="n">get_nan</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_ch_report</span> <span class="o">=</span> <span class="n">block_ch_report</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_run_report</span> <span class="o">=</span> <span class="n">block_run_report</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_classes</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">static_classes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_plots</span> <span class="o">=</span> <span class="n">make_plots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_hist_cols</span> <span class="o">=</span> <span class="n">plot_hist_cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_hist_sum_cols</span> <span class="o">=</span> <span class="n">plot_hist_sum_cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist_bins</span> <span class="o">=</span> <span class="n">hist_bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_count_cols</span> <span class="o">=</span> <span class="n">plot_count_cols</span>
+
+    <span class="k">def</span> <span class="nf">_process_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_metrics</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">process_read</span><span class="p">(</span><span class="n">read_metrics</span><span class="p">)</span>
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">]</span>
+        <span class="n">mux</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">]</span>
+        <span class="n">klass</span> <span class="o">=</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">klass</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_class</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">class_counts</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">][</span><span class="n">klass</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># this is the first block for this ch/mux</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_reads_to_block</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">class_counts</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">duration_reads_to_block</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">class_durations</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_to_block</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">duration_reads_to_block</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">-</span> <span class="n">read_metrics</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="BlockingReport.finalize"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.blocking_report.BlockingReport.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finalize filtered_summary and perform post_processing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+
+        <span class="c1"># get ch/muxes and classes from channels which have not been filtered out.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">klasses</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="c1"># force self.klasses to include self.block_class so that even if we</span>
+        <span class="c1"># don&#39;t have any blocks, we see e.g. pcnt_time_block 0.0 in the outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">klasses</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">ch</span><span class="p">,</span> <span class="n">ch_muxes</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">class_counts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">mux</span> <span class="ow">in</span> <span class="n">ch_muxes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">keep_ch_mux</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">klasses</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ch_muxes</span><span class="p">[</span><span class="n">mux</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># we don&#39;t want to report the number of blocks before the first block..</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_first_klasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">klasses</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">])</span>
+
+        <span class="n">ch_mux_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_channel_report</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ch_mux_results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ch_mux_results_ar</span><span class="p">,</span> <span class="n">run_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_run_report</span><span class="p">(</span><span class="n">ch_mux_results</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_plots</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">generate_plots</span><span class="p">(</span><span class="n">ch_mux_results_ar</span><span class="p">,</span> <span class="n">run_results</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_make_channel_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;create summary with one row per channel/mux combination&quot;&quot;&quot;</span>
+        <span class="n">durations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">class_durations</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">class_counts</span>
+
+        <span class="n">ch_mux_results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ch</span><span class="p">,</span> <span class="n">keep_muxes</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">keep_ch_mux</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">mux</span> <span class="ow">in</span> <span class="n">keep_muxes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">keep_muxes</span><span class="p">[</span><span class="n">mux</span><span class="p">]:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">ch</span>
+                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">mux</span>
+                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;time_to_first_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">time_to_block</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span>
+                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;n_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)]</span> <span class="o">=</span>  <span class="n">counts</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">]</span>
+                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;sum_durations&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">durations</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                    <span class="c1"># add percentage times</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">({</span> <span class="s1">&#39;pcnt_time_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">klass</span><span class="p">):</span>
+                              <span class="mf">100.0</span><span class="o">*</span><span class="n">durations</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">][</span><span class="n">klass</span><span class="p">]</span><span class="o">/</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;sum_durations&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">klasses</span><span class="p">})</span>
+                    <span class="c1"># add summed klass counts to first block</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">({</span> <span class="s1">&#39;n_</span><span class="si">{}</span><span class="s1">_to_first_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">):</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">n_reads_to_block</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">][</span><span class="n">klass</span><span class="p">]</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_first_klasses</span><span class="p">})</span>
+                    <span class="c1"># add summed klass durations to first block</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">({</span> <span class="s1">&#39;sum_duration_</span><span class="si">{}</span><span class="s1">_to_first_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">):</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">duration_reads_to_block</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">mux</span><span class="p">][</span><span class="n">klass</span><span class="p">]</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_first_klasses</span><span class="p">})</span>
+                    <span class="n">ch_mux_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="n">ch_report_fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span>
+                                    <span class="n">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_ch_report</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">prefix</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ch_report_fp</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ch_mux_results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">cols</span> <span class="o">=</span> <span class="n">ch_mux_results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="n">convert</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">converter</span>
+                <span class="n">meta</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">meta</span>
+                <span class="n">meta_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">convert</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">meta</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="p">]</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span> <span class="o">+</span> <span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+                <span class="p">[</span> <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">convert</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span> <span class="o">+</span> <span class="n">meta_vals</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ch_mux_results</span> <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">ch_mux_results</span>
+
+
+    <span class="k">def</span> <span class="nf">_make_run_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ch_mux_results</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;create run report with all data aggregated into a single row&quot;&quot;&quot;</span>
+
+        <span class="c1">#  convert per ch/mux data into a structured array so we can easily feed</span>
+        <span class="c1">#  it into numpy to get medians / sums, etc.</span>
+
+        <span class="c1"># ugly, assume any strings no longer than 20 char</span>
+        <span class="n">get_type</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;S20&#39;</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="n">get_type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">ch_mux_results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="p">]</span>
+        <span class="n">results_ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ch_mux_results</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ch_mux_results</span><span class="p">):</span>
+            <span class="n">results_ar</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span> <span class="n">r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">results_ar</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span> <span class="p">])</span>
+
+        <span class="n">agg</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">agg</span><span class="p">[</span><span class="s1">&#39;n_good_ch_mux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results_ar</span><span class="p">)</span>
+        <span class="n">agg</span><span class="p">[</span><span class="s1">&#39;n_good_ch_mux_with_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)]</span> <span class="o">=</span> \
+                <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="s1">&#39;n_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">agg</span><span class="p">[</span><span class="s1">&#39;sum_good_ch_mux_run_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="s1">&#39;sum_durations&#39;</span><span class="p">])</span>
+
+        <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;time_to_first_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)</span>
+        <span class="c1"># mask out any channels without a block</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">results_ar</span><span class="p">[</span><span class="s1">&#39;n_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">agg</span><span class="p">[</span><span class="s1">&#39;median_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="n">mask</span><span class="p">][</span><span class="n">col</span><span class="p">])</span>
+        <span class="c1"># calculate mean of the exponential distribution to complement the median</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">agg</span><span class="p">[</span><span class="s1">&#39;exp_mean_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">expon</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="n">mask</span><span class="p">][</span><span class="n">col</span><span class="p">],</span> <span class="n">floc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+
+        <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">klasses</span><span class="p">:</span>
+            <span class="c1"># do percentage time in each class</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;pcnt_time_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">klass</span><span class="p">)</span>
+            <span class="c1"># weight % from each ch/mux by ch/mux sum duration, and renormalise</span>
+            <span class="n">agg</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">results_ar</span><span class="p">[</span><span class="s1">&#39;sum_durations&#39;</span><span class="p">]))</span> <span class="o">/</span> <span class="n">agg</span><span class="p">[</span><span class="s1">&#39;sum_good_ch_mux_run_time&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_first_klasses</span><span class="p">:</span>
+            <span class="c1"># do median class count and duration before first block</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;n_</span><span class="si">{}</span><span class="s1">_to_first_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">),</span>
+                        <span class="s1">&#39;sum_duration_</span><span class="si">{}</span><span class="s1">_to_first_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">),</span>
+                        <span class="p">):</span>
+                <span class="n">agg</span><span class="p">[</span><span class="s1">&#39;median_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="n">mask</span><span class="p">][</span><span class="n">col</span><span class="p">])</span>
+                <span class="c1"># calculate mean of the exponential distribution to complement the median</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">agg</span><span class="p">[</span><span class="s1">&#39;exp_mean_&#39;</span> <span class="o">+</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">expon</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="n">mask</span><span class="p">][</span><span class="n">col</span><span class="p">],</span> <span class="n">floc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># do counts of channels with 0, 1, 2, 3, 4, 5 or &gt;5 blocks</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;n_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">7</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span> <span class="nb">max</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="n">col</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">]</span>
+        <span class="n">counts</span><span class="p">,</span> <span class="n">bins_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">results_ar</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">starts_counts</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bins_np</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">bin_start</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">starts_counts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;n_ch_mux_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bin_start</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)</span>
+            <span class="n">agg</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span>
+        <span class="n">rest_start</span><span class="p">,</span> <span class="n">rest_count</span> <span class="o">=</span> <span class="n">starts_counts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;n_ch_mux_ge_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rest_start</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)</span>
+        <span class="n">agg</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">rest_count</span>
+
+
+        <span class="n">run_report_fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">outpath</span><span class="p">,</span>
+                                    <span class="n">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_run_report</span><span class="p">,</span>
+                                               <span class="n">prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">prefix</span><span class="p">))</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">meta</span>
+        <span class="n">convert</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">converter</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">run_report_fp</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">agg</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">+</span> <span class="n">meta</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">convert</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">agg</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="o">+</span> <span class="n">meta</span><span class="o">.</span><span class="n">values</span><span class="p">()])))</span>
+
+        <span class="k">return</span> <span class="n">results_ar</span><span class="p">,</span> <span class="n">agg</span>
+
+
+<div class="viewcode-block" id="BlockingReport.generate_plots"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.blocking_report.BlockingReport.generate_plots">[docs]</a>    <span class="k">def</span> <span class="nf">generate_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ch_results</span><span class="p">,</span> <span class="n">run_results</span><span class="p">):</span>
+        <span class="n">outpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">outpath</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_summary</span><span class="o">.</span><span class="n">prefix</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_hist_cols</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ch_results</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;to_first_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+                <span class="c1"># mask out channels without at least 1 block</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">ch_results</span><span class="p">[</span><span class="s1">&#39;n_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">ch_results</span><span class="p">[</span><span class="n">col</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">scale</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_scale_units</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+            <span class="n">x_label</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">capwords</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">units</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">*=</span> <span class="n">scale</span>
+            <span class="n">plot_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">add_prefix</span><span class="p">(</span><span class="n">col</span> <span class="o">+</span> <span class="s1">&#39;_hist.png&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># our mask has filtered out all the data</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Skipping plot </span><span class="si">{}</span><span class="s1">, no data after masking.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plot_path</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plot_exp_hist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">plot_path</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="n">x_label</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hist_bins</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">sum_name</span><span class="p">,</span> <span class="n">cols_to_sum</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_hist_sum_cols</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">plot_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">add_prefix</span><span class="p">(</span><span class="n">sum_name</span> <span class="o">+</span> <span class="s1">&#39;_hist.png&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">))</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ch_results</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;to_first_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sum_name</span><span class="p">:</span>
+                <span class="c1"># mask out channels without at least 1 block</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">ch_results</span><span class="p">[</span><span class="s1">&#39;n_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_class</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">ch_results</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># our mask has filtered out all the data</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Skipping plot </span><span class="si">{}</span><span class="s1">, no data after masking.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plot_path</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">rows</span><span class="p">[</span><span class="n">cols_to_sum</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols_to_sum</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">+=</span> <span class="n">rows</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+
+                <span class="n">scale</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_scale_units</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+                <span class="n">x_label</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">capwords</span><span class="p">(</span><span class="n">sum_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">units</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">*=</span> <span class="n">scale</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plot_exp_hist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">plot_path</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="n">x_label</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hist_bins</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_count_cols</span><span class="p">:</span>
+            <span class="n">plot_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">add_prefix</span><span class="p">(</span><span class="n">col</span> <span class="o">+</span> <span class="s1">&#39;_counts.png&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">))</span>
+            <span class="n">scale</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_scale_units</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+            <span class="n">x_label</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">capwords</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">make_bar_chart</span><span class="p">(</span><span class="n">ch_results</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">plot_path</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="n">x_label</span><span class="p">)</span>
+
+        <span class="n">plot_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">add_prefix</span><span class="p">(</span><span class="s1">&#39;pcnt_time.png&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_stacked_duty_time</span><span class="p">(</span><span class="n">run_results</span><span class="p">,</span> <span class="n">plot_path</span><span class="p">,</span> <span class="n">col_prefix</span><span class="o">=</span><span class="s1">&#39;pcnt_time_&#39;</span><span class="p">,</span>
+                               <span class="n">colours_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">static_classes</span><span class="p">,</span>
+                               <span class="n">x_label</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BlockingReport.make_stacked_duty_time"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.blocking_report.BlockingReport.make_stacked_duty_time">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">make_stacked_duty_time</span><span class="p">(</span><span class="n">results_dict</span><span class="p">,</span> <span class="n">plot_path</span><span class="p">,</span>
+                               <span class="n">col_prefix</span><span class="o">=</span><span class="s1">&#39;pcnt_time_&#39;</span><span class="p">,</span>
+                               <span class="n">colours_dict</span><span class="o">=</span><span class="p">{},</span>
+                               <span class="n">x_label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">&#39;% Time&#39;</span><span class="p">,</span>
+                            <span class="p">):</span>
+        <span class="n">klasses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">results_dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">col_prefix</span><span class="p">):</span>
+                <span class="n">klasses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">col_prefix</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+        <span class="c1"># if we have been given a colours dict, use the colours and order of</span>
+        <span class="c1"># columns there</span>
+        <span class="n">klass_colours</span>  <span class="o">=</span> <span class="p">{</span> <span class="n">klass</span><span class="p">:</span> <span class="n">colours_dict</span><span class="p">[</span><span class="n">klass</span><span class="p">]</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="n">klasses</span> <span class="p">}</span>
+        <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="n">klasses</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">klass</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">klass_colours</span><span class="p">:</span>
+                <span class="n">klass_colours</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="n">klass</span><span class="p">:</span><span class="n">choose_colour</span><span class="p">(</span><span class="n">klass</span><span class="p">)</span>
+                <span class="p">})</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># to store plot items</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">klass</span><span class="p">,</span> <span class="n">colour</span> <span class="ow">in</span> <span class="n">klass_colours</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="n">col_prefix</span> <span class="o">+</span> <span class="n">klass</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">results_dict</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">bottom</span><span class="o">=</span><span class="n">base</span><span class="p">,</span>
+                              <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colour</span><span class="p">,</span>
+                              <span class="n">align</span><span class="o">=</span><span class="s1">&#39;edge&#39;</span><span class="p">))</span>
+            <span class="n">base</span> <span class="o">+=</span> <span class="n">results_dict</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span> <span class="n">string</span><span class="o">.</span><span class="n">capwords</span><span class="p">(</span><span class="n">klass</span><span class="p">)</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="n">klass_colours</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="nb">tuple</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">p</span><span class="p">]),</span> <span class="n">names</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span>
+                    <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="o">-.</span><span class="mi">3</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">),</span> <span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span><span class="mi">7</span><span class="p">},</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;expand&quot;</span><span class="p">,</span> <span class="n">borderaxespad</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">autoscale_view</span><span class="p">()</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="p">])</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_label</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y_label</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">])</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BlockingReport.plot_exp_hist"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.blocking_report.BlockingReport.plot_exp_hist">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">plot_exp_hist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">plot_path</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+        <span class="c1"># do plotting</span>
+        <span class="n">nrows</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="n">nrows</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">nrows</span><span class="p">))</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="c1"># if data type in int, we want to make sure the bins are no smaller than  1.</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">n_bins</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">max_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_val</span> <span class="o">&lt;</span> <span class="n">n_bins</span><span class="p">:</span>
+                <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># fit expontial dist</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">expon</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">floc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">expon</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">))</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> (exp fit mean </span><span class="si">{:5.1f}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">scale</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Normalised Probability&#39;</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_label</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BlockingReport.make_bar_chart"><a class="viewcode-back" href="../../../panga.accumulate.html#panga.accumulate.blocking_report.BlockingReport.make_bar_chart">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">make_bar_chart</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">plot_path</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">bin_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># do plotting</span>
+        <span class="n">nrows</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="n">nrows</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">nrows</span><span class="p">))</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Number of Channels&#39;</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_label</span><span class="p">)</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_scale_units</span><span class="p">(</span><span class="n">col</span><span class="p">):</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="s1">&#39;n_&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">[:</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="s1">&#39; (counts)&#39;</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="s1">&#39;duration&#39;</span> <span class="ow">in</span> <span class="n">col</span> <span class="ow">or</span> <span class="s1">&#39;time&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="s1">&#39; (mins)&#39;</span>
+            <span class="n">scale</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">60.0</span>  <span class="c1"># convert seconds to minutes</span>
+        <span class="k">return</span> <span class="n">scale</span><span class="p">,</span> <span class="n">units</span></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Oxford Nanopore Technologies
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
